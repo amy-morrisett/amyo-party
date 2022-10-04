@@ -1,11 +1,9 @@
-import CharacterSelect from './CharacterSelect.js';
+import RouteList from './RouteList';
 
 function App() {
   return (
     <div className="App">
-      <h1>It's-a me, Amyo!</h1>
-      <h3>Choose your character:</h3>
-      <CharacterSelect />
+      <RouteList />
     </div>
   );
 }

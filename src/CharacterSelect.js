@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import GameBoard from './GameBoard';
 
 function CharacterSelect() {
   const [character, setCharacter] = useState('');
@@ -27,6 +29,8 @@ function CharacterSelect() {
 
   return (
     <div className="CharacterSelect">
+      <h1>It's-a me, Amyo!</h1>
+      <h3>Choose your character:</h3>
       <ul>
         <li>
           <button type="button" onClick={() => setCharacter('Peach')}>
@@ -82,6 +86,7 @@ function CharacterSelect() {
           <li>{CPU}</li>
         ))}
       </ul>
+      <Link to="/game-board">Game Board</Link>
     </div>
   );
 }
