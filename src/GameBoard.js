@@ -84,11 +84,12 @@ function GameBoard() {
       </div>
       <button
         type="button"
-        onClick={() => setDiceRoll(Math.floor(Math.random() * 10))}
+        onClick={() => setDiceRoll(Math.floor(Math.random() * 10) + 1)}
       >
         Roll Dice
         {console.log(spaces.indexOf('KE'))}
       </button>
+      <p>{diceRoll ? diceRoll : 'Roll the dice to see how far you will go!'}</p>
     </div>
   );
 }
