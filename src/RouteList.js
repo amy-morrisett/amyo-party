@@ -5,10 +5,11 @@ import CharacterSelect from './CharacterSelect';
 import GameBoard from './GameBoard';
 
 function RouteList() {
+  //   const location = useLocation();
   return (
     <div>
       <Routes>
-        <Route path="/character-select" element={<CharacterSelect />} />
+        <Route path="/" element={<CharacterSelect />} />
         <Route path="/game-board" element={<GameBoard />} />
       </Routes>
     </div>
