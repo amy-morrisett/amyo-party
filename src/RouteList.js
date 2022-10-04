@@ -5,7 +5,6 @@ import CharacterSelect from './CharacterSelect';
 import GameBoard from './GameBoard';
 
 function RouteList() {
-  //   const location = useLocation();
   return (
     <div>
       <Routes>
