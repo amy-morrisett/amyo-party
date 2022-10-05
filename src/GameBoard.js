@@ -9,7 +9,7 @@ import { db } from './firebase';
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
 
 function GameBoard() {
-  //L is lucky, B is blue, CE is coin piranha event, SE is star piranha event, KE is skip event R is red, W is Bowser, C is chance, V is VS, S is star
+  //L is lucky, B is blue, CE is coin piranha event, SE is star piranha event, KE is skip event, R is red, W is Bowser, C is chance, V is VS, S is star
 
   //after space 32, bowser flower lottery happens, if they "win" they go to the bowser detour spaces
 
@@ -29,39 +29,37 @@ function GameBoard() {
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     //console.log('playerInfo before roll', playerInfo);
     let updatedIndex = playerInfo.currentSpace.index + diceRoll;
+    let updatedPlayer = {
+      charName: playerInfo.charName,
+      coins: playerInfo.coins,
+      items: playerInfo.items,
+      stars: playerInfo.stars,
+      currentSpace: {
+        bowserDetour: playerInfo.currentSpace.bowserDetour,
+        index: updatedIndex,
+      },
+    };
     //console.log('updatedIndex', updatedIndex);
     if (!playerInfo.currentSpace.bowserDetour) {
-      if (updatedIndex <= 32) {
-        //console.log('should be seeing me every time');
-        let updatedPlayer = {
-          charName: playerInfo.charName,
-          coins: playerInfo.coins,
-          items: playerInfo.items,
-          stars: playerInfo.stars,
-          currentSpace: { bowserDetour: false, index: updatedIndex },
-        };
-        if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
-          updatedPlayer.coins -= 20;
-          updatedPlayer.stars++;
-        }
-        setPlayerInfo(updatedPlayer);
-        updateDoc(gameDoc, {
-          char1: { updatedPlayer },
-        });
-      } else if (playerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
-        let updatedPlayer = {
-          charName: playerInfo.charName,
-          coins: playerInfo.coins,
-          items: playerInfo.items,
-          stars: playerInfo.stars,
-          currentSpace: { bowserDetour: false, index: updatedIndex },
-        };
+      if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
+        updatedPlayer.coins -= 20;
+        updatedPlayer.stars++;
+      }
+      if (playerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
         let winningTheLottery = Math.floor(Math.random() * 4);
         if (!winningTheLottery) {
           setWonTheLottery(false);
           updatedPlayer.currentSpace.bowserDetour = true;
           updatedPlayer.currentSpace.index -= 33;
+          if (updatedPlayer.currentSpace.index >= 6) {
+            updatedPlayer.coins >= 7
+              ? (updatedPlayer.coins -= 7)
+              : (updatedPlayer.coins = 0);
+            const receiveSlowDice = Math.floor(Math.random() * 2);
+            if (receiveSlowDice) updatedPlayer.items.push('slow dice');
+          }
           if (updatedPlayer.currentSpace.index > 10) {
+            setWonTheLottery(true);
             updatedPlayer.curentSpace.bowserDetour = false;
             updatedPlayer.currentSpace.index += 8;
           }
@@ -69,35 +67,12 @@ function GameBoard() {
           updatedPlayer.coins += 10;
           updatedPlayer.currentSpace.index -= 42;
         }
-        setPlayerInfo(updatedPlayer);
-        updateDoc(gameDoc, {
-          char1: { updatedPlayer },
-        });
-      } else if (updatedIndex > 32) {
-        let updatedPlayer = {
-          charName: playerInfo.charName,
-          coins: playerInfo.coins,
-          items: playerInfo.items,
-          stars: playerInfo.stars,
-          currentSpace: { bowserDetour: false, index: updatedIndex },
-        };
-        if (updatedIndex > 41) {
-          updatedPlayer.coins += 10;
-          updatedPlayer.currentSpace.index -= 42;
-        }
-        setPlayerInfo(updatedPlayer);
-        updateDoc(gameDoc, {
-          char1: { updatedPlayer },
-        });
+      }
+      if (updatedIndex > 41) {
+        updatedPlayer.coins += 10;
+        updatedPlayer.currentSpace.index -= 42;
       }
     } else {
-      let updatedPlayer = {
-        charName: playerInfo.charName,
-        coins: playerInfo.coins,
-        items: playerInfo.items,
-        stars: playerInfo.stars,
-        currentSpace: { bowserDetour: true, index: updatedIndex },
-      };
       if (updatedIndex >= 6) {
         updatedPlayer.coins >= 7
           ? (updatedPlayer.coins -= 7)
@@ -106,15 +81,15 @@ function GameBoard() {
         if (receiveSlowDice) updatedPlayer.items.push('slow dice');
       }
       if (updatedIndex > 10) {
-        updatedPlayer.curentSpace.bowserDetour = false;
+        setWonTheLottery(true);
+        updatedPlayer.currentSpace.bowserDetour = false;
         updatedPlayer.currentSpace.index += 8;
       }
-      setPlayerInfo(updatedPlayer);
-      updateDoc(gameDoc, {
-        char1: { updatedPlayer },
-      });
     }
-
+    setPlayerInfo(updatedPlayer);
+    updateDoc(gameDoc, {
+      char1: { updatedPlayer },
+    });
     //if on normal board and player's index is currently 32 or less BUT diceRoll + player's index will be greater than 32, do the bowser lottery
     //for right now, 3/4 chance of flipping it to true
     //if it remains false, check if diceRoll + player's index will be greater than 41
@@ -160,7 +135,6 @@ function GameBoard() {
             <span>{`${space}    `}</span>
           )
         )}
-        {/* {console.log(diceRoll, playerInfo)} */}
       </div>
       <div>
         {bowserDetour.map((space, idx) =>
@@ -176,10 +150,9 @@ function GameBoard() {
         Roll Dice
         {/* {console.log(spaces.indexOf('KE'))} */}
       </button>
-      <p>{diceRoll ? `You rolled a ${diceRoll}!` : 'Roll the dice!'}</p>
+      <p>{diceRoll ? `You rolled a(n) ${diceRoll}!` : 'Roll the dice!'}</p>
       <button type="button" onClick={handleUpdate}>
         Move
-        {/* {console.log(spaces.indexOf('KE'))} */}
       </button>
       <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
     </div>
