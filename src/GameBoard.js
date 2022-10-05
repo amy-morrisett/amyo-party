@@ -25,6 +25,7 @@ function GameBoard() {
 
   function handleUpdate() {
     //const gameDocSnap = await getDoc(gameDoc);
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     console.log('playerInfo before roll', playerInfo);
     let updatedIndex = playerInfo.currentSpace.index + diceRoll;
     console.log('updatedIndex', updatedIndex);
@@ -39,6 +40,9 @@ function GameBoard() {
           currentSpace: { bowserDetour: false, index: updatedIndex },
         };
         setPlayerInfo(updatedPlayer);
+        updateDoc(gameDoc, {
+          char1: { updatedPlayer },
+        });
       }
       //   setPlayerInfo(gameDocSnap.data().char1);
       //   console.log('playerInfo after roll', playerInfo);
@@ -53,13 +57,13 @@ function GameBoard() {
     //need to find out if player will lap around, pass a star, do the bowser lottery, get the extra coins for making it around, etc.
   }
 
-  function displayBoard() {
-    handleUpdate();
-    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    updateDoc(gameDoc, {
-      char1: { playerInfo },
-    });
-  }
+  //   function displayBoard() {
+  //     // handleUpdate();
+  //     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+  //     updateDoc(gameDoc, {
+  //       char1: { playerInfo },
+  //     });
+  //   }
 
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
@@ -105,8 +109,9 @@ function GameBoard() {
         Roll Dice
         {/* {console.log(spaces.indexOf('KE'))} */}
       </button>
-      <button type="button" onClick={displayBoard}>
-        View Updated Board
+      <p>{diceRoll ? `You rolled a ${diceRoll}!` : 'Roll the dice!'}</p>
+      <button type="button" onClick={handleUpdate}>
+        Move
         {/* {console.log(spaces.indexOf('KE'))} */}
       </button>
       {/* <p>{diceRoll ? diceRoll : 'Roll the dice to see how far you will go!'}</p> */}
