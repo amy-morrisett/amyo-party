@@ -17,6 +17,7 @@ function GameBoard() {
   const [diceRoll, setDiceRoll] = useState(0);
   const [spaces, setSpaces] = useState([]);
   const [bowserDetour, setBowserDetour] = useState([]);
+  const [playerInfo, setPlayerInfo] = useState({});
 
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
@@ -26,19 +27,37 @@ function GameBoard() {
       setBowserDetour(boardDocSnap.data().bowserDetour);
     };
     getSpaceInfo();
+
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+    const getPlayerInfo = async () => {
+      const gameDocSnap = await getDoc(gameDoc);
+      setPlayerInfo(gameDocSnap.data().char1);
+    };
+    getPlayerInfo();
   }, []);
 
   return (
     <div className="GameBoard">
       <div>
-        {spaces.map((space) => (
-          <span>{`${space}    `}</span>
-        ))}
+        {spaces.map((space, idx) =>
+          idx === playerInfo.currentSpace.index &&
+          !playerInfo.currentSpace.bowserDetour ? (
+            <strong>{`${space}    `}</strong>
+          ) : (
+            <span>{`${space}    `}</span>
+          )
+        )}
+        {console.log(playerInfo)}
       </div>
       <div>
-        {bowserDetour.map((space) => (
-          <span>{`${space}    `}</span>
-        ))}
+        {bowserDetour.map((space, idx) =>
+          idx === playerInfo.currentSpace.index &&
+          playerInfo.currentSpace.bowserDetour ? (
+            <strong>{`${space}    `}</strong>
+          ) : (
+            <span>{`${space}    `}</span>
+          )
+        )}
       </div>
       <button
         type="button"

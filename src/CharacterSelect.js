@@ -20,10 +20,34 @@ function CharacterSelect() {
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     updateDoc(gameDoc, {
-      char1: { charName: selectedChar, coins: 10, items: [], stars: 0 },
-      char2: { charName: playerArr[1], coins: 10, items: [], stars: 0 },
-      char3: { charName: playerArr[2], coins: 10, items: [], stars: 0 },
-      char4: { charName: playerArr[3], coins: 10, items: [], stars: 0 },
+      char1: {
+        charName: selectedChar,
+        coins: 10,
+        items: [],
+        stars: 0,
+        currentSpace: { bowserDetour: false, index: 0 },
+      },
+      char2: {
+        charName: playerArr[1],
+        coins: 10,
+        items: [],
+        stars: 0,
+        currentSpace: { bowserDetour: false, index: 0 },
+      },
+      char3: {
+        charName: playerArr[2],
+        coins: 10,
+        items: [],
+        stars: 0,
+        currentSpace: { bowserDetour: false, index: 0 },
+      },
+      char4: {
+        charName: playerArr[3],
+        coins: 10,
+        items: [],
+        stars: 0,
+        currentSpace: { bowserDetour: false, index: 0 },
+      },
     });
     playerArr = playerArr.slice(1);
     setCPUArr(playerArr);
