@@ -23,8 +23,7 @@ function GameBoard() {
     setDiceRoll(Math.floor(Math.random() * 10) + 1);
   }
 
-  async function displayBoard() {
-    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+  function handleUpdate() {
     //const gameDocSnap = await getDoc(gameDoc);
     console.log('playerInfo before roll', playerInfo);
     let updatedIndex = playerInfo.currentSpace.index + diceRoll;
@@ -41,11 +40,6 @@ function GameBoard() {
         };
         setPlayerInfo(updatedPlayer);
       }
-
-      updateDoc(gameDoc, {
-        char1: { playerInfo },
-      });
-
       //   setPlayerInfo(gameDocSnap.data().char1);
       //   console.log('playerInfo after roll', playerInfo);
     }
@@ -57,6 +51,14 @@ function GameBoard() {
     //if on bowser detour board and player's index is currently 10 or less BUT diceRoll + player's index will be greater than 10, make sure to set them back to the normal board (starting at space 19)
 
     //need to find out if player will lap around, pass a star, do the bowser lottery, get the extra coins for making it around, etc.
+  }
+
+  function displayBoard() {
+    handleUpdate();
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+    updateDoc(gameDoc, {
+      char1: { playerInfo },
+    });
   }
 
   useEffect(() => {
