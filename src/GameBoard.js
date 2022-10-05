@@ -18,6 +18,7 @@ function GameBoard() {
   const [spaces, setSpaces] = useState([]);
   const [bowserDetour, setBowserDetour] = useState([]);
   const [playerInfo, setPlayerInfo] = useState({});
+  const [wonTheLottery, setWonTheLottery] = useState(true);
 
   async function handleDiceRoll() {
     setDiceRoll(Math.floor(Math.random() * 10) + 1);
@@ -26,26 +27,92 @@ function GameBoard() {
   function handleUpdate() {
     //const gameDocSnap = await getDoc(gameDoc);
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    console.log('playerInfo before roll', playerInfo);
+    //console.log('playerInfo before roll', playerInfo);
     let updatedIndex = playerInfo.currentSpace.index + diceRoll;
-    console.log('updatedIndex', updatedIndex);
+    //console.log('updatedIndex', updatedIndex);
     if (!playerInfo.currentSpace.bowserDetour) {
       if (updatedIndex <= 32) {
-        console.log('should be seeing me every time');
-        const updatedPlayer = {
+        //console.log('should be seeing me every time');
+        let updatedPlayer = {
           charName: playerInfo.charName,
           coins: playerInfo.coins,
           items: playerInfo.items,
           stars: playerInfo.stars,
           currentSpace: { bowserDetour: false, index: updatedIndex },
         };
+        if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
+          updatedPlayer.coins -= 20;
+          updatedPlayer.stars++;
+        }
+        setPlayerInfo(updatedPlayer);
+        updateDoc(gameDoc, {
+          char1: { updatedPlayer },
+        });
+      } else if (playerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
+        let updatedPlayer = {
+          charName: playerInfo.charName,
+          coins: playerInfo.coins,
+          items: playerInfo.items,
+          stars: playerInfo.stars,
+          currentSpace: { bowserDetour: false, index: updatedIndex },
+        };
+        let winningTheLottery = Math.floor(Math.random() * 4);
+        if (!winningTheLottery) {
+          setWonTheLottery(false);
+          updatedPlayer.currentSpace.bowserDetour = true;
+          updatedPlayer.currentSpace.index -= 33;
+          if (updatedPlayer.currentSpace.index > 10) {
+            updatedPlayer.curentSpace.bowserDetour = false;
+            updatedPlayer.currentSpace.index += 8;
+          }
+        } else if (updatedIndex > 41) {
+          updatedPlayer.coins += 10;
+          updatedPlayer.currentSpace.index -= 42;
+        }
+        setPlayerInfo(updatedPlayer);
+        updateDoc(gameDoc, {
+          char1: { updatedPlayer },
+        });
+      } else if (updatedIndex > 32) {
+        let updatedPlayer = {
+          charName: playerInfo.charName,
+          coins: playerInfo.coins,
+          items: playerInfo.items,
+          stars: playerInfo.stars,
+          currentSpace: { bowserDetour: false, index: updatedIndex },
+        };
+        if (updatedIndex > 41) {
+          updatedPlayer.coins += 10;
+          updatedPlayer.currentSpace.index -= 42;
+        }
         setPlayerInfo(updatedPlayer);
         updateDoc(gameDoc, {
           char1: { updatedPlayer },
         });
       }
-      //   setPlayerInfo(gameDocSnap.data().char1);
-      //   console.log('playerInfo after roll', playerInfo);
+    } else {
+      let updatedPlayer = {
+        charName: playerInfo.charName,
+        coins: playerInfo.coins,
+        items: playerInfo.items,
+        stars: playerInfo.stars,
+        currentSpace: { bowserDetour: true, index: updatedIndex },
+      };
+      if (updatedIndex >= 6) {
+        updatedPlayer.coins >= 7
+          ? (updatedPlayer.coins -= 7)
+          : (updatedPlayer.coins = 0);
+        const receiveSlowDice = Math.floor(Math.random() * 2);
+        if (receiveSlowDice) updatedPlayer.items.push('slow dice');
+      }
+      if (updatedIndex > 10) {
+        updatedPlayer.curentSpace.bowserDetour = false;
+        updatedPlayer.currentSpace.index += 8;
+      }
+      setPlayerInfo(updatedPlayer);
+      updateDoc(gameDoc, {
+        char1: { updatedPlayer },
+      });
     }
 
     //if on normal board and player's index is currently 32 or less BUT diceRoll + player's index will be greater than 32, do the bowser lottery
@@ -114,7 +181,7 @@ function GameBoard() {
         Move
         {/* {console.log(spaces.indexOf('KE'))} */}
       </button>
-      {/* <p>{diceRoll ? diceRoll : 'Roll the dice to see how far you will go!'}</p> */}
+      <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
     </div>
   );
 }
