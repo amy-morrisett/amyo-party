@@ -64,7 +64,21 @@ function GameBoard() {
         player.items.push(itemArr[Math.floor(Math.random() * itemArr.length)]);
         //TODO: right now this doesn't update until the next time we roll the dice & move
       }
-      //options: get 10 coins, get 15 coins, get random item
+    }
+    if (spaceArr[player.currentSpace.index] === 'W') {
+      //lose 10 coins, bowser revolution (divide everyone's coins evenly), or lose 1 star
+    }
+    if (spaceArr[player.currentSpace.index] === 'C') {
+      //choose random 1st player
+      //choose random 2nd player
+      //choose random event out of the following:
+      //1 swaps coins with 2, 1 swaps stars with 2, and reverse
+    }
+    if (spaceArr[player.currentSpace.index] === 'V') {
+      //current player gets 3 coins
+      //randomly choose number of coins everyone has to give up out of 5, 10, 15, 20
+      //use trivia question that can have 4 distinct scores to determine places
+      //1st place gets 70% of the pot, 2nd place gets 20%, 3rd place gets 10%
     }
   }
 
