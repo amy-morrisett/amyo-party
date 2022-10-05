@@ -1,14 +1,3 @@
-//store for a given game:
-//4 players -- for each one:
-//character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
-//TODO: how to shift turns from one player to the next, how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
-//TODO: account for board events
-//TODO: allow players to use items and factor those into the turn
-//TODO: status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
-//TODO: implement item shop; you pass it if you get to 30
-//LATER GOAL: put in other boards?
-//we are not gonna have triple dice cause it will make my life harder lol
-
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { getDoc, doc } from 'firebase/firestore';

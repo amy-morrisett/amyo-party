@@ -5,7 +5,8 @@
 //TODO: account for board events
 //TODO: allow players to use items and factor those into the turn
 //TODO: status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
-//TODO: implement item shop; you pass it if you get to 30
+//TODO: display who is in 1st, 2nd, 3rd, 4th place?
+//TODO: add last 5 turns event where someone gets a helping hand?
 //LATER GOAL: put in other boards?
 //we are not gonna have triple dice cause it will make my life harder lol
 
@@ -65,11 +66,9 @@ function GameBoard() {
         player.coins += 15;
       }
       if (randomChoice === 2) {
-        // const itemDoc = doc(db, 'party-info', 'itemPrices');
-        // const itemDocSnap = await getDoc(itemDoc);
         const itemArr = Object.keys(itemList);
         player.items.push(itemArr[Math.floor(Math.random() * itemArr.length)]);
-        //TODO: right now this doesn't update until the next time we roll the dice & move
+        //TODO: not sure if this is updating the PlayerStats display correctly
       }
     }
     if (spaceArr[player.currentSpace.index] === 'W') {
@@ -181,7 +180,6 @@ function GameBoard() {
     handleBoardEvent(updatedPlayer, currentBoard);
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    // const gameDocSnap = await getDoc(gameDoc);
 
     if (currentPlayerInfo.charName === player4Info.charName) {
       setPlayer4Info(updatedPlayer);
@@ -209,6 +207,7 @@ function GameBoard() {
   async function handleTurnChange() {
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     const gameDocSnap = await getDoc(gameDoc);
+
     if (currentPlayerInfo.charName === gameDocSnap.data().char4.charName) {
       setCurrentPlayerInfo(gameDocSnap.data().char1);
     } else if (
@@ -242,6 +241,7 @@ function GameBoard() {
       alert('Sorry, you do not have enough coins!');
     } else {
       updatedPlayer.items.push(item);
+
       if (currentPlayerInfo.charName === player4Info.charName) {
         setPlayer4Info(updatedPlayer);
         updateDoc(gameDoc, {
@@ -298,9 +298,12 @@ function GameBoard() {
   return (
     <div className="GameBoard">
       <h2>{currentPlayerInfo.charName}'s turn!</h2>
+
       <PlayerStats />
+
       <div>
         {spaces.map((space, idx) =>
+          //TODO: show where ALL players are on the board -- code below doesn't account for multiple players on the same space
           //   {
           //     if (
           //       idx === player1Info.currentSpace.index &&
@@ -334,6 +337,7 @@ function GameBoard() {
           )
         )}
       </div>
+
       <div>
         {bowserDetour.map((space, idx) =>
           idx === currentPlayerInfo.currentSpace.index &&
@@ -344,14 +348,17 @@ function GameBoard() {
           )
         )}
       </div>
+
       <button type="button" onClick={handleDiceRoll}>
         Roll Dice
       </button>
       <p>{diceRoll ? `You rolled a(n) ${diceRoll}!` : 'Roll the dice!'}</p>
+
       <button type="button" onClick={handleUpdate}>
         Move
       </button>
       <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
+
       <div>
         {seeItemShop ? (
           <div>
@@ -374,6 +381,7 @@ function GameBoard() {
           ''
         )}
       </div>
+
       <button type="button" onClick={handleTurnChange}>
         Change Turn
       </button>
