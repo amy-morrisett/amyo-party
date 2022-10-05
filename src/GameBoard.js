@@ -1,7 +1,7 @@
 //store for a given game:
 //4 players -- for each one:
 //character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
-//TODO: how to shift turns from one player to the next, how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
+//TODO: how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
 //TODO: account for board events
 //TODO: allow players to use items and factor those into the turn
 //TODO: status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
@@ -12,6 +12,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import PlayerStats from './PlayerStats.js';
 import './App.css';
 
 function GameBoard() {
@@ -20,12 +21,14 @@ function GameBoard() {
   const [diceRoll, setDiceRoll] = useState(0);
   const [spaces, setSpaces] = useState([]);
   const [bowserDetour, setBowserDetour] = useState([]);
+  const [itemList, setItemList] = useState([]);
   const [currentPlayerInfo, setCurrentPlayerInfo] = useState({});
   const [player1Info, setPlayer1Info] = useState({});
   const [player2Info, setPlayer2Info] = useState({});
   const [player3Info, setPlayer3Info] = useState({});
   const [player4Info, setPlayer4Info] = useState({});
   const [wonTheLottery, setWonTheLottery] = useState(true);
+  const [seeItemShop, setSeeItemShop] = useState(false);
 
   function handleDiceRoll() {
     setDiceRoll(Math.floor(Math.random() * 10) + 1);
@@ -38,7 +41,7 @@ function GameBoard() {
       player.coins += 3;
     }
     if (spaceArr[player.currentSpace.index] === 'R') {
-      player.coins -= 3;
+      player.coins >= 3 ? (player.coins -= 3) : (player.coins = 0);
     }
     if (spaceArr[player.currentSpace.index] === 'KE') {
       player.currentSpace.index = 40;
@@ -61,17 +64,32 @@ function GameBoard() {
       if (randomChoice === 1) {
         player.coins += 15;
       }
-      //   let randomChoice = 2;
       if (randomChoice === 2) {
-        const itemDoc = doc(db, 'party-info', 'itemPrices');
-        const itemDocSnap = await getDoc(itemDoc);
-        const itemArr = Object.keys(itemDocSnap.data());
+        // const itemDoc = doc(db, 'party-info', 'itemPrices');
+        // const itemDocSnap = await getDoc(itemDoc);
+        const itemArr = Object.keys(itemList);
         player.items.push(itemArr[Math.floor(Math.random() * itemArr.length)]);
         //TODO: right now this doesn't update until the next time we roll the dice & move
       }
     }
     if (spaceArr[player.currentSpace.index] === 'W') {
-      //lose 10 coins, bowser revolution (divide everyone's coins evenly), or lose 1 star
+      let randomChoice = Math.floor(Math.random() * 3);
+      if (randomChoice === 0) {
+        player.coins >= 10 ? (player.coins -= 10) : (player.coins = 0);
+      }
+      if (randomChoice === 1) {
+        let totalCoins =
+          player1Info.coins +
+          player2Info.coins +
+          player3Info.coins +
+          player4Info.coins;
+        let newCoins = Math.floor(totalCoins / 4);
+        player.coins = newCoins;
+        //TODO: need to make sure everyone else's coins are also changed to this
+      }
+      if (randomChoice === 2) {
+        if (player.stars) player.stars--;
+      }
     }
     if (spaceArr[player.currentSpace.index] === 'C') {
       //choose random 1st player
@@ -105,6 +123,10 @@ function GameBoard() {
       if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
         updatedPlayer.coins -= 20;
         updatedPlayer.stars++;
+      }
+
+      if (updatedIndex >= 30) {
+        setSeeItemShop(true);
       }
 
       if (currentPlayerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
@@ -202,6 +224,49 @@ function GameBoard() {
     }
   }
 
+  async function handleItemPurchase(item, cost) {
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+
+    let updatedPlayer = {
+      charName: currentPlayerInfo.charName,
+      coins: currentPlayerInfo.coins - cost,
+      items: currentPlayerInfo.items,
+      stars: currentPlayerInfo.stars,
+      currentSpace: {
+        bowserDetour: currentPlayerInfo.currentSpace.bowserDetour,
+        index: currentPlayerInfo.currentSpace.index,
+      },
+    };
+
+    if (updatedPlayer.coins < 0) {
+      alert('Sorry, you do not have enough coins!');
+    } else {
+      updatedPlayer.items.push(item);
+      if (currentPlayerInfo.charName === player4Info.charName) {
+        setPlayer4Info(updatedPlayer);
+        updateDoc(gameDoc, {
+          char4: updatedPlayer,
+        });
+      } else if (currentPlayerInfo.charName === player3Info.charName) {
+        setPlayer3Info(updatedPlayer);
+        updateDoc(gameDoc, {
+          char3: updatedPlayer,
+        });
+      } else if (currentPlayerInfo.charName === player2Info.charName) {
+        setPlayer2Info(updatedPlayer);
+        updateDoc(gameDoc, {
+          char2: updatedPlayer,
+        });
+      } else {
+        setPlayer1Info(updatedPlayer);
+        updateDoc(gameDoc, {
+          char1: updatedPlayer,
+        });
+      }
+    }
+    setSeeItemShop(false);
+  }
+
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
     const getSpaceInfo = async () => {
@@ -210,6 +275,13 @@ function GameBoard() {
       setBowserDetour(boardDocSnap.data().bowserDetour);
     };
     getSpaceInfo();
+
+    const itemDoc = doc(db, 'party-info', 'itemPrices');
+    const getItemInfo = async () => {
+      const itemDocSnap = await getDoc(itemDoc);
+      setItemList(itemDocSnap.data());
+    };
+    getItemInfo();
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     const getPlayerInfo = async () => {
@@ -226,51 +298,7 @@ function GameBoard() {
   return (
     <div className="GameBoard">
       <h2>{currentPlayerInfo.charName}'s turn!</h2>
-      <div>
-        <h3>{player1Info.charName} Info</h3>
-        <div></div>
-        <div>Coins: {player1Info.coins}</div>
-        <div>Stars: {player1Info.stars}</div>
-        <div>
-          Items:{' '}
-          {player1Info.items
-            ? player1Info.items.map((item) => <span>{item}, </span>)
-            : ''}
-        </div>
-      </div>
-      <div>
-        <h3>{player2Info.charName} Info</h3>
-        <div>Coins: {player2Info.coins}</div>
-        <div>Stars: {player2Info.stars}</div>
-        <div>
-          Items:{' '}
-          {player2Info.items
-            ? player2Info.items.map((item) => <span>{item}, </span>)
-            : ''}
-        </div>
-      </div>
-      <div>
-        <h3>{player3Info.charName} Info</h3>
-        <div>Coins: {player3Info.coins}</div>
-        <div>Stars: {player3Info.stars}</div>
-        <div>
-          Items:{' '}
-          {player3Info.items
-            ? player3Info.items.map((item) => <span>{item}, </span>)
-            : ''}
-        </div>
-      </div>
-      <div>
-        <h3>{player4Info.charName} Info</h3>
-        <div>Coins: {player4Info.coins}</div>
-        <div>Stars: {player4Info.stars}</div>
-        <div>
-          Items:{' '}
-          {player4Info.items
-            ? player4Info.items.map((item) => <span>{item}, </span>)
-            : ''}
-        </div>
-      </div>
+      <PlayerStats />
       <div>
         {spaces.map((space, idx) =>
           //   {
@@ -324,6 +352,28 @@ function GameBoard() {
         Move
       </button>
       <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
+      <div>
+        {seeItemShop ? (
+          <div>
+            'Would you like to buy an item?'{' '}
+            <ul>
+              {Object.keys(itemList).map((item) => (
+                <li>
+                  {item}: {itemList[item]} coins
+                  <button
+                    type="button"
+                    onClick={() => handleItemPurchase(item, itemList[item])}
+                  >
+                    Buy
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          ''
+        )}
+      </div>
       <button type="button" onClick={handleTurnChange}>
         Change Turn
       </button>
