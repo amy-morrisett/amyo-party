@@ -1,7 +1,7 @@
 //TODO: make database (postgres or firestore?)
 //store for a given game:
 //4 players -- for each one:
-//character, current coins, current stars, current items, perhaps other stats for bonus stars?
+//character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
 //status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
 
 import React, { useState, useEffect } from 'react';
@@ -15,82 +15,28 @@ function GameBoard() {
 
   //after space 22, players can buy a star if they have enough coins
   const [diceRoll, setDiceRoll] = useState(0);
-  const [testingChar, setTestingChar] = useState('');
-  const spaces = [
-    'L',
-    'B',
-    'CE',
-    'CE',
-    'B',
-    'R',
-    'CE',
-    'CE',
-    'B',
-    'L',
-    'B',
-    'CE',
-    'CE',
-    'B',
-    'B',
-    'CE',
-    'CE',
-    'B',
-    'L',
-    'L',
-    'B',
-    'B',
-    'B',
-    'B',
-    'B',
-    'B',
-    'L',
-    'B',
-    'KE',
-    'B',
-    'B',
-    'R',
-    'L',
-    'B',
-    'L',
-    'V',
-    'B',
-    'CE',
-    'CE',
-    'R',
-    'C',
-    'W',
-  ];
-  const bowserDetourSpaces = [
-    'R',
-    'R',
-    'R',
-    'B',
-    'L',
-    'B',
-    'B',
-    'L',
-    'V',
-    'C',
-    'W',
-  ];
+  const [spaces, setSpaces] = useState([]);
+  const [bowserDetour, setBowserDetour] = useState([]);
+
   useEffect(() => {
-    const playerDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    const getCharName = async () => {
-      const playerDocSnap = await getDoc(playerDoc);
-      setTestingChar(playerDocSnap.data().char1.charName);
+    const boardDoc = doc(db, 'party-info', 'boardLayouts');
+    const getSpaceInfo = async () => {
+      const boardDocSnap = await getDoc(boardDoc);
+      setSpaces(boardDocSnap.data().spaces);
+      setBowserDetour(boardDocSnap.data().bowserDetour);
     };
-    getCharName();
+    getSpaceInfo();
   }, []);
+
   return (
     <div className="GameBoard">
-      <h1>{testingChar}</h1>
       <div>
         {spaces.map((space) => (
           <span>{`${space}    `}</span>
         ))}
       </div>
       <div>
-        {bowserDetourSpaces.map((space) => (
+        {bowserDetour.map((space) => (
           <span>{`${space}    `}</span>
         ))}
       </div>
