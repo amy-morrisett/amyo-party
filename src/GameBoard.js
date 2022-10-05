@@ -5,13 +5,14 @@
 //TODO: account for board events
 //TODO: allow players to use items and factor those into the turn
 //TODO: status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
-//TODO: implement item shop
+//TODO: implement item shop; you pass it if you get to 30
 //LATER GOAL: put in other boards?
 //we are not gonna have triple dice cause it will make my life harder lol
 
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import './App.css';
 
 function GameBoard() {
   //L is lucky, B is blue, CE is coin piranha event, SE is star piranha event, KE is skip event, R is red, W is Bowser, C is chance, V is VS
@@ -19,7 +20,11 @@ function GameBoard() {
   const [diceRoll, setDiceRoll] = useState(0);
   const [spaces, setSpaces] = useState([]);
   const [bowserDetour, setBowserDetour] = useState([]);
-  const [playerInfo, setPlayerInfo] = useState({});
+  const [currentPlayerInfo, setCurrentPlayerInfo] = useState({});
+  const [player1Info, setPlayer1Info] = useState({});
+  const [player2Info, setPlayer2Info] = useState({});
+  const [player3Info, setPlayer3Info] = useState({});
+  const [player4Info, setPlayer4Info] = useState({});
   const [wonTheLottery, setWonTheLottery] = useState(true);
 
   function handleDiceRoll() {
@@ -82,27 +87,27 @@ function GameBoard() {
     }
   }
 
-  function handleUpdate() {
-    let updatedIndex = playerInfo.currentSpace.index + diceRoll;
+  async function handleUpdate() {
+    let updatedIndex = currentPlayerInfo.currentSpace.index + diceRoll;
 
     let updatedPlayer = {
-      charName: playerInfo.charName,
-      coins: playerInfo.coins,
-      items: playerInfo.items,
-      stars: playerInfo.stars,
+      charName: currentPlayerInfo.charName,
+      coins: currentPlayerInfo.coins,
+      items: currentPlayerInfo.items,
+      stars: currentPlayerInfo.stars,
       currentSpace: {
-        bowserDetour: playerInfo.currentSpace.bowserDetour,
+        bowserDetour: currentPlayerInfo.currentSpace.bowserDetour,
         index: updatedIndex,
       },
     };
 
-    if (!playerInfo.currentSpace.bowserDetour) {
+    if (!currentPlayerInfo.currentSpace.bowserDetour) {
       if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
         updatedPlayer.coins -= 20;
         updatedPlayer.stars++;
       }
 
-      if (playerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
+      if (currentPlayerInfo.currentSpace.index <= 32 && updatedIndex > 32) {
         let winningTheLottery = Math.floor(Math.random() * 4);
         if (!winningTheLottery) {
           setWonTheLottery(false);
@@ -146,7 +151,7 @@ function GameBoard() {
       }
     }
 
-    setPlayerInfo(updatedPlayer);
+    setCurrentPlayerInfo(updatedPlayer);
 
     let currentBoard = updatedPlayer.currentSpace.bowserDetour
       ? bowserDetour
@@ -154,9 +159,47 @@ function GameBoard() {
     handleBoardEvent(updatedPlayer, currentBoard);
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    updateDoc(gameDoc, {
-      char1: { updatedPlayer },
-    });
+    // const gameDocSnap = await getDoc(gameDoc);
+
+    if (currentPlayerInfo.charName === player4Info.charName) {
+      setPlayer4Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char4: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player3Info.charName) {
+      setPlayer3Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char3: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player2Info.charName) {
+      setPlayer2Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char2: updatedPlayer,
+      });
+    } else {
+      setPlayer1Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char1: updatedPlayer,
+      });
+    }
+  }
+
+  async function handleTurnChange() {
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+    const gameDocSnap = await getDoc(gameDoc);
+    if (currentPlayerInfo.charName === gameDocSnap.data().char4.charName) {
+      setCurrentPlayerInfo(gameDocSnap.data().char1);
+    } else if (
+      currentPlayerInfo.charName === gameDocSnap.data().char3.charName
+    ) {
+      setCurrentPlayerInfo(gameDocSnap.data().char4);
+    } else if (
+      currentPlayerInfo.charName === gameDocSnap.data().char2.charName
+    ) {
+      setCurrentPlayerInfo(gameDocSnap.data().char3);
+    } else {
+      setCurrentPlayerInfo(gameDocSnap.data().char2);
+    }
   }
 
   useEffect(() => {
@@ -171,28 +214,92 @@ function GameBoard() {
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     const getPlayerInfo = async () => {
       const gameDocSnap = await getDoc(gameDoc);
-      setPlayerInfo(gameDocSnap.data().char1);
+      setPlayer1Info(gameDocSnap.data().char1);
+      setPlayer2Info(gameDocSnap.data().char2);
+      setPlayer3Info(gameDocSnap.data().char3);
+      setPlayer4Info(gameDocSnap.data().char4);
+      setCurrentPlayerInfo(gameDocSnap.data().char1);
     };
     getPlayerInfo();
   }, []);
 
   return (
     <div className="GameBoard">
+      <h2>{currentPlayerInfo.charName}'s turn!</h2>
       <div>
-        <h3>{playerInfo.charName} Info</h3>
-        <div>Coins: {playerInfo.coins}</div>
-        <div>Stars: {playerInfo.stars}</div>
+        <h3>{player1Info.charName} Info</h3>
+        <div></div>
+        <div>Coins: {player1Info.coins}</div>
+        <div>Stars: {player1Info.stars}</div>
         <div>
           Items:{' '}
-          {playerInfo.items
-            ? playerInfo.items.map((item) => <span>{item}, </span>)
+          {player1Info.items
+            ? player1Info.items.map((item) => <span>{item}, </span>)
+            : ''}
+        </div>
+      </div>
+      <div>
+        <h3>{player2Info.charName} Info</h3>
+        <div>Coins: {player2Info.coins}</div>
+        <div>Stars: {player2Info.stars}</div>
+        <div>
+          Items:{' '}
+          {player2Info.items
+            ? player2Info.items.map((item) => <span>{item}, </span>)
+            : ''}
+        </div>
+      </div>
+      <div>
+        <h3>{player3Info.charName} Info</h3>
+        <div>Coins: {player3Info.coins}</div>
+        <div>Stars: {player3Info.stars}</div>
+        <div>
+          Items:{' '}
+          {player3Info.items
+            ? player3Info.items.map((item) => <span>{item}, </span>)
+            : ''}
+        </div>
+      </div>
+      <div>
+        <h3>{player4Info.charName} Info</h3>
+        <div>Coins: {player4Info.coins}</div>
+        <div>Stars: {player4Info.stars}</div>
+        <div>
+          Items:{' '}
+          {player4Info.items
+            ? player4Info.items.map((item) => <span>{item}, </span>)
             : ''}
         </div>
       </div>
       <div>
         {spaces.map((space, idx) =>
-          idx === playerInfo.currentSpace.index &&
-          !playerInfo.currentSpace.bowserDetour ? (
+          //   {
+          //     if (
+          //       idx === player1Info.currentSpace.index &&
+          //       !player1Info.currentSpace.bowserDetour
+          //     ) {
+          //       return <strong className="player1">{`${space}    `}</strong>;
+          //     } else if (
+          //       idx === player2Info.currentSpace.index &&
+          //       !player2Info.currentSpace.bowserDetour
+          //     ) {
+          //       return <strong className="player2">{`${space}    `}</strong>;
+          //     } else if (
+          //       idx === player3Info.currentSpace.index &&
+          //       !player3Info.currentSpace.bowserDetour
+          //     ) {
+          //       return <strong className="player3">{`${space}    `}</strong>;
+          //     } else if (
+          //       idx === player4Info.currentSpace.index &&
+          //       !player4Info.currentSpace.bowserDetour
+          //     ) {
+          //       return <strong className="player4">{`${space}    `}</strong>;
+          //     } else {
+          //       return <span>{`${space}    `}</span>;
+          //     }
+          //   }
+          idx === currentPlayerInfo.currentSpace.index &&
+          !currentPlayerInfo.currentSpace.bowserDetour ? (
             <strong>{`${space}    `}</strong>
           ) : (
             <span>{`${space}    `}</span>
@@ -201,8 +308,8 @@ function GameBoard() {
       </div>
       <div>
         {bowserDetour.map((space, idx) =>
-          idx === playerInfo.currentSpace.index &&
-          playerInfo.currentSpace.bowserDetour ? (
+          idx === currentPlayerInfo.currentSpace.index &&
+          currentPlayerInfo.currentSpace.bowserDetour ? (
             <strong>{`${space}    `}</strong>
           ) : (
             <span>{`${space}    `}</span>
@@ -217,6 +324,9 @@ function GameBoard() {
         Move
       </button>
       <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
+      <button type="button" onClick={handleTurnChange}>
+        Change Turn
+      </button>
     </div>
   );
 }

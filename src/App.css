@@ -36,3 +36,19 @@
     transform: rotate(360deg);
   }
 }
+
+.player1 {
+  color: #FF1493
+}
+
+.player2 {
+  color: #9400D3
+}
+
+.player3 {
+  color: 	#1E90FF
+}
+
+.player4 {
+  color: 	#FF8C00
+}
