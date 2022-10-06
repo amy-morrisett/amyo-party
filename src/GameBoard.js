@@ -36,8 +36,8 @@ function GameBoard() {
   }
 
   async function handleBoardEvent(player, spaceArr) {
-    // const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    // const gameDocSnap = await getDoc(gameDoc);
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+    const gameDocSnap = await getDoc(gameDoc);
     if (spaceArr[player.currentSpace.index] === 'B') {
       player.coins += 3;
     }
@@ -48,14 +48,21 @@ function GameBoard() {
       player.currentSpace.index = 40;
       alert('You skipped some spaces!');
     }
-    // if (spaceArr[player.currentSpace.index] === 'CE') {
-    //     if (player.currentSpace.index === 2 || player.currentSpace.index === 3) {
-    //         let canUpgrade = gameDocSnap.data().p1.currentOwner ? true : false
-    //         updateDoc(gameDoc, {
-    //             p1: { currentOwner: player.charName, type:  },
-    //           });
-    //     }
-    //   }
+    if (spaceArr[player.currentSpace.index] === 'CE') {
+      if (player.currentSpace.index === 2 || player.currentSpace.index === 3) {
+        let owner = gameDocSnap.data().p1.currentOwner;
+        if (owner && player.charName !== owner) {
+          player.coins >= 10 ? (player.coins -= 10) : (player.coins = 0);
+          for (let i = 0; i < 3; i++) {}
+        } else if (owner && player.charName === owner && player.coins >= 30) {
+          //ask player if they want to upgrade to a star-sealing piranha for 30 coins
+        } else {
+          updateDoc(gameDoc, {
+            p1: { currentOwner: player.charName, type: 'coin' },
+          });
+        }
+      }
+    }
 
     if (spaceArr[player.currentSpace.index] === 'L') {
       let randomChoice = Math.floor(Math.random() * 3);

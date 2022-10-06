@@ -20,6 +20,7 @@ function PlayerStats() {
     };
     getPlayerInfo();
   }, [player1Info, player2Info, player3Info, player4Info]);
+  //TODO -- IMPORTANT!!! : this dependency array may be exploding my reads, need to fix
 
   return (
     <div className="PlayerStats">
