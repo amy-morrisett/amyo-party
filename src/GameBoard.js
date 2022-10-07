@@ -1,6 +1,8 @@
 //store for a given game:
 //4 players -- for each one:
 //character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
+//TODO: have the game stop after a certain number of turns & announce a winner
+//TODO: make the piranha plant event so that it can only steal coins twice before being reset, and only steal a star once before being reset -- probably add this as a property to the database instance?
 //TODO: how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
 //TODO: account for board events
 //TODO: allow players to use items and factor those into the turn
@@ -38,28 +40,77 @@ function GameBoard() {
   async function handleBoardEvent(player, spaceArr) {
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     const gameDocSnap = await getDoc(gameDoc);
+
+    //TODO: make stand-in variables for non-current players, make booleans to see if they're changed at all, if so then update them at the end
+
     if (spaceArr[player.currentSpace.index] === 'B') {
       player.coins += 3;
     }
+
     if (spaceArr[player.currentSpace.index] === 'R') {
       player.coins >= 3 ? (player.coins -= 3) : (player.coins = 0);
     }
+
     if (spaceArr[player.currentSpace.index] === 'KE') {
       player.currentSpace.index = 40;
       alert('You skipped some spaces!');
     }
+
     if (spaceArr[player.currentSpace.index] === 'CE') {
+      //to make this more efficient, maybe loop through and check the index, then set some variable to the appropriate piranha so we don't have to duplicate this code 5 timees
       if (player.currentSpace.index === 2 || player.currentSpace.index === 3) {
         let owner = gameDocSnap.data().p1.currentOwner;
-        if (owner && player.charName !== owner) {
-          player.coins >= 10 ? (player.coins -= 10) : (player.coins = 0);
-          for (let i = 0; i < 3; i++) {}
-        } else if (owner && player.charName === owner && player.coins >= 30) {
-          //ask player if they want to upgrade to a star-sealing piranha for 30 coins
+        if (gameDocSnap.data().p1.type === 'coin') {
+          if (owner) {
+            if (player.charName !== owner) {
+              const coinsToExchange = player.coins >= 10 ? 10 : player.coins;
+              player.coins -= coinsToExchange;
+              if (player1Info.charName === owner) {
+                player1Info.coins += coinsToExchange;
+              } else if (player2Info.charName === owner) {
+                player1Info.coins += coinsToExchange;
+              } else if (player3Info.charName === owner) {
+                player1Info.coins += coinsToExchange;
+              } else if (player4Info.charName === owner) {
+                player1Info.coins += coinsToExchange;
+              }
+              //reduce the number of times the piranha can steal again to 1
+              //TODO: I assume this will cause problems with changing state
+            } else if (player.charName === owner) {
+              if (player.coins >= 30) {
+                //upgrade to a star-sealing piranha for 30 coins
+                //change piranha type to star
+              } else {
+                player.coins += 5;
+                //give the player 5 free coins
+                //reduce the number of times it can steal?
+              }
+            }
+          } else {
+            updateDoc(gameDoc, {
+              p1: { currentOwner: player.charName, type: 'coin' },
+            });
+          }
         } else {
-          updateDoc(gameDoc, {
-            p1: { currentOwner: player.charName, type: 'coin' },
-          });
+          if (player.charName !== owner) {
+            const starsToExchange = player.stars >= 1 ? 1 : 0;
+            player.stars -= starsToExchange;
+            if (player1Info.charName === owner) {
+              player1Info.stars += starsToExchange;
+            } else if (player2Info.charName === owner) {
+              player1Info.stars += starsToExchange;
+            } else if (player3Info.charName === owner) {
+              player1Info.stars += starsToExchange;
+            } else if (player4Info.charName === owner) {
+              player1Info.stars += starsToExchange;
+            }
+            //TODO: I assume this will cause problems with changing state
+            updateDoc(gameDoc, {
+              p1: { currentOwner: '', type: 'coin' },
+            });
+          } else {
+            player.coins += 10;
+          }
         }
       }
     }
@@ -90,19 +141,50 @@ function GameBoard() {
           player3Info.coins +
           player4Info.coins;
         let newCoins = Math.floor(totalCoins / 4);
-        player.coins = newCoins;
-        //TODO: need to make sure everyone else's coins are also changed to this
+        player1Info.coins = newCoins;
+        player2Info.coins = newCoins;
+        player3Info.coins = newCoins;
+        player4Info.coins = newCoins;
+        //TODO: I assume this will cause problems with changing state
       }
       if (randomChoice === 2) {
         if (player.stars) player.stars--;
       }
     }
+
     if (spaceArr[player.currentSpace.index] === 'C') {
-      //choose random 1st player
-      //choose random 2nd player
-      //choose random event out of the following:
-      //1 swaps coins with 2, 1 swaps stars with 2, and reverse
+      let playerArr = [player1Info, player2Info, player3Info, player4Info];
+      let updateFuncArr = [
+        setPlayer1Info,
+        setPlayer2Info,
+        setPlayer3Info,
+        setPlayer4Info,
+      ];
+
+      let random1 = Math.floor(Math.random() * 4);
+      let random2 = Math.floor(Math.random() * 4);
+
+      while (random1 === random2) {
+        random2 = Math.floor(Math.random() * 4);
+      }
+      let playerA = playerArr[random1];
+      let playerB = playerArr[random2];
+
+      let randomChoice = Math.floor(Math.random() * 2);
+      if (!randomChoice) {
+        let placeholder = playerA.coins;
+        playerA.coins = playerB.coins;
+        playerB.coins = placeholder;
+      } else {
+        let placeholder = playerA.stars;
+        playerA.stars = playerB.stars;
+        playerB.stars = placeholder;
+      }
+
+      updateFuncArr[random1](playerA);
+      updateFuncArr[random2](playerB);
     }
+
     if (spaceArr[player.currentSpace.index] === 'V') {
       //current player gets 3 coins
       //randomly choose number of coins everyone has to give up out of 5, 10, 15, 20
