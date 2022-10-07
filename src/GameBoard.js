@@ -146,6 +146,7 @@ function GameBoard() {
         player3Info.coins = newCoins;
         player4Info.coins = newCoins;
         //TODO: I assume this will cause problems with changing state
+        //need to use the setPlayer1Info etc. functions instead of just directly setting the variable to something
       }
       if (randomChoice === 2) {
         if (player.stars) player.stars--;
@@ -183,6 +184,7 @@ function GameBoard() {
 
       updateFuncArr[random1](playerA);
       updateFuncArr[random2](playerB);
+      //this is only updating them in state, still need to update in the database
     }
 
     if (spaceArr[player.currentSpace.index] === 'V') {
