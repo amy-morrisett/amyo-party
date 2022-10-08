@@ -1,8 +1,6 @@
 //store for a given game:
 //4 players -- for each one:
 //character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
-//TODO: have the game stop after a certain number of turns & announce a winner
-//TODO: make the piranha plant event so that it can only steal coins twice before being reset, and only steal a star once before being reset -- probably add this as a property to the database instance?
 //TODO: how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
 //TODO: account for board events
 //TODO: allow players to use items and factor those into the turn
@@ -38,81 +36,17 @@ function GameBoard() {
   }
 
   async function handleBoardEvent(player, spaceArr) {
-    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    const gameDocSnap = await getDoc(gameDoc);
-
-    //TODO: make stand-in variables for non-current players, make booleans to see if they're changed at all, if so then update them at the end
-
+    // const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+    // const gameDocSnap = await getDoc(gameDoc);
     if (spaceArr[player.currentSpace.index] === 'B') {
       player.coins += 3;
     }
-
     if (spaceArr[player.currentSpace.index] === 'R') {
       player.coins >= 3 ? (player.coins -= 3) : (player.coins = 0);
     }
-
     if (spaceArr[player.currentSpace.index] === 'KE') {
       player.currentSpace.index = 40;
       alert('You skipped some spaces!');
-    }
-
-    if (spaceArr[player.currentSpace.index] === 'CE') {
-      //to make this more efficient, maybe loop through and check the index, then set some variable to the appropriate piranha so we don't have to duplicate this code 5 timees
-      if (player.currentSpace.index === 2 || player.currentSpace.index === 3) {
-        let owner = gameDocSnap.data().p1.currentOwner;
-        if (gameDocSnap.data().p1.type === 'coin') {
-          if (owner) {
-            if (player.charName !== owner) {
-              const coinsToExchange = player.coins >= 10 ? 10 : player.coins;
-              player.coins -= coinsToExchange;
-              if (player1Info.charName === owner) {
-                player1Info.coins += coinsToExchange;
-              } else if (player2Info.charName === owner) {
-                player1Info.coins += coinsToExchange;
-              } else if (player3Info.charName === owner) {
-                player1Info.coins += coinsToExchange;
-              } else if (player4Info.charName === owner) {
-                player1Info.coins += coinsToExchange;
-              }
-              //reduce the number of times the piranha can steal again to 1
-              //TODO: I assume this will cause problems with changing state
-            } else if (player.charName === owner) {
-              if (player.coins >= 30) {
-                //upgrade to a star-sealing piranha for 30 coins
-                //change piranha type to star
-              } else {
-                player.coins += 5;
-                //give the player 5 free coins
-                //reduce the number of times it can steal?
-              }
-            }
-          } else {
-            updateDoc(gameDoc, {
-              p1: { currentOwner: player.charName, type: 'coin' },
-            });
-          }
-        } else {
-          if (player.charName !== owner) {
-            const starsToExchange = player.stars >= 1 ? 1 : 0;
-            player.stars -= starsToExchange;
-            if (player1Info.charName === owner) {
-              player1Info.stars += starsToExchange;
-            } else if (player2Info.charName === owner) {
-              player1Info.stars += starsToExchange;
-            } else if (player3Info.charName === owner) {
-              player1Info.stars += starsToExchange;
-            } else if (player4Info.charName === owner) {
-              player1Info.stars += starsToExchange;
-            }
-            //TODO: I assume this will cause problems with changing state
-            updateDoc(gameDoc, {
-              p1: { currentOwner: '', type: 'coin' },
-            });
-          } else {
-            player.coins += 10;
-          }
-        }
-      }
     }
 
     if (spaceArr[player.currentSpace.index] === 'L') {
@@ -129,64 +63,12 @@ function GameBoard() {
         //TODO: not sure if this is updating the PlayerStats display correctly
       }
     }
-    if (spaceArr[player.currentSpace.index] === 'W') {
-      let randomChoice = Math.floor(Math.random() * 3);
-      if (randomChoice === 0) {
-        player.coins >= 10 ? (player.coins -= 10) : (player.coins = 0);
-      }
-      if (randomChoice === 1) {
-        let totalCoins =
-          player1Info.coins +
-          player2Info.coins +
-          player3Info.coins +
-          player4Info.coins;
-        let newCoins = Math.floor(totalCoins / 4);
-        player1Info.coins = newCoins;
-        player2Info.coins = newCoins;
-        player3Info.coins = newCoins;
-        player4Info.coins = newCoins;
-        //TODO: I assume this will cause problems with changing state
-        //need to use the setPlayer1Info etc. functions instead of just directly setting the variable to something
-      }
-      if (randomChoice === 2) {
-        if (player.stars) player.stars--;
-      }
-    }
-
     if (spaceArr[player.currentSpace.index] === 'C') {
-      let playerArr = [player1Info, player2Info, player3Info, player4Info];
-      let updateFuncArr = [
-        setPlayer1Info,
-        setPlayer2Info,
-        setPlayer3Info,
-        setPlayer4Info,
-      ];
-
-      let random1 = Math.floor(Math.random() * 4);
-      let random2 = Math.floor(Math.random() * 4);
-
-      while (random1 === random2) {
-        random2 = Math.floor(Math.random() * 4);
-      }
-      let playerA = playerArr[random1];
-      let playerB = playerArr[random2];
-
-      let randomChoice = Math.floor(Math.random() * 2);
-      if (!randomChoice) {
-        let placeholder = playerA.coins;
-        playerA.coins = playerB.coins;
-        playerB.coins = placeholder;
-      } else {
-        let placeholder = playerA.stars;
-        playerA.stars = playerB.stars;
-        playerB.stars = placeholder;
-      }
-
-      updateFuncArr[random1](playerA);
-      updateFuncArr[random2](playerB);
-      //this is only updating them in state, still need to update in the database
+      //choose random 1st player
+      //choose random 2nd player
+      //choose random event out of the following:
+      //1 swaps coins with 2, 1 swaps stars with 2, and reverse
     }
-
     if (spaceArr[player.currentSpace.index] === 'V') {
       //current player gets 3 coins
       //randomly choose number of coins everyone has to give up out of 5, 10, 15, 20
@@ -268,7 +150,11 @@ function GameBoard() {
     let currentBoard = updatedPlayer.currentSpace.bowserDetour
       ? bowserDetour
       : spaces;
-    handleBoardEvent(updatedPlayer, currentBoard);
+    let spaceType = currentBoard[updatedPlayer.currentSpace.index];
+    let simpleEvents = ['B', 'R', 'KE', 'L'];
+    if (simpleEvents.includes(spaceType)) {
+      handleBoardEvent(updatedPlayer, currentBoard);
+    }
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
 
@@ -292,6 +178,113 @@ function GameBoard() {
       updateDoc(gameDoc, {
         char1: updatedPlayer,
       });
+    }
+
+    let updatedPlayerArr = [
+      { ...player1Info },
+      { ...player2Info },
+      { ...player3Info },
+      { ...player4Info },
+    ];
+
+    let currentPlayerNum;
+
+    for (let i = 0; i < updatedPlayerArr.length; i++) {
+      if (currentPlayerInfo.charName === updatedPlayerArr[i].charName) {
+        currentPlayerNum = i;
+      }
+    }
+
+    if (spaceType === 'W') {
+      let randomChoice = Math.floor(Math.random() * 3);
+      if (randomChoice === 0) {
+        updatedPlayerArr[currentPlayerNum].coins >= 10
+          ? (updatedPlayerArr[currentPlayerNum].coins -= 10)
+          : (updatedPlayerArr[currentPlayerNum].coins = 0);
+      }
+      if (randomChoice === 1) {
+        let totalCoins = updatedPlayerArr.reduce((x, y) => x + y.coins, 0);
+        let newCoins = Math.floor(totalCoins / 4);
+        for (let elem of updatedPlayerArr) {
+          elem.coins = newCoins;
+        }
+      }
+      if (randomChoice === 2) {
+        if (updatedPlayerArr[currentPlayerNum].stars)
+          updatedPlayerArr[currentPlayerNum].stars--;
+      }
+    }
+    if (spaceType === 'CE') {
+      const gameDocSnap = await getDoc(gameDoc);
+      if (
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 2 ||
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 3
+      ) {
+        let ownerName = gameDocSnap.data().p1.currentOwner;
+        let ownerNum;
+        for (let i = 0; i < updatedPlayerArr.length; i++) {
+          if (updatedPlayerArr[i] === ownerName) {
+            ownerNum = i;
+          }
+        }
+        if (ownerName) {
+          if (gameDocSnap.data().p1.type === 'coin') {
+            if (ownerNum === currentPlayerNum) {
+              updatedPlayerArr[currentPlayerNum].coins += 5;
+              if (updatedPlayerArr[currentPlayerNum].coins >= 30) {
+                updatedPlayerArr[currentPlayerNum].coins -= 30;
+                //TODO: change type of piranha 1 to star, make sure this doesn't interfere with stuff below
+              }
+            } else {
+              const coinsToExchange =
+                updatedPlayerArr[currentPlayerNum].coins >= 10
+                  ? 10
+                  : updatedPlayerArr[currentPlayerNum].coins;
+              updatedPlayerArr[currentPlayerNum].coins -= coinsToExchange;
+              updatedPlayerArr[ownerNum].coins += coinsToExchange;
+            }
+            if (gameDocSnap.data().p1.canSteal === 1) {
+              updateDoc(gameDoc, {
+                p1: {
+                  currentOwner: '',
+                  type: 'coin',
+                  canSteal: 0,
+                },
+              });
+            } else {
+              updateDoc(gameDoc, {
+                p1: {
+                  currentOwner: gameDocSnap.data().p1.currentOwner,
+                  type: 'coin',
+                  canSteal: 1,
+                },
+              });
+            }
+          } else {
+            if (ownerNum === currentPlayerNum) {
+              updatedPlayerArr[currentPlayerNum].coins += 10;
+            } else {
+              const starsToExchange = updatedPlayerArr[currentPlayerNum].stars
+                ? 1
+                : 0;
+              updatedPlayerArr[currentPlayerNum].stars -= starsToExchange;
+              updatedPlayerArr[ownerNum].stars += starsToExchange;
+            }
+          }
+        } else {
+          updateDoc(gameDoc, {
+            p1: {
+              currentOwner: updatedPlayerArr[currentPlayerNum].charName,
+              type: 'coin',
+              canSteal: 2,
+            },
+          });
+        }
+      }
+    }
+    if (spaceType === 'C') {
+    }
+    if (spaceType === 'V') {
     }
   }
 
@@ -395,31 +388,6 @@ function GameBoard() {
       <div>
         {spaces.map((space, idx) =>
           //TODO: show where ALL players are on the board -- code below doesn't account for multiple players on the same space
-          //   {
-          //     if (
-          //       idx === player1Info.currentSpace.index &&
-          //       !player1Info.currentSpace.bowserDetour
-          //     ) {
-          //       return <strong className="player1">{`${space}    `}</strong>;
-          //     } else if (
-          //       idx === player2Info.currentSpace.index &&
-          //       !player2Info.currentSpace.bowserDetour
-          //     ) {
-          //       return <strong className="player2">{`${space}    `}</strong>;
-          //     } else if (
-          //       idx === player3Info.currentSpace.index &&
-          //       !player3Info.currentSpace.bowserDetour
-          //     ) {
-          //       return <strong className="player3">{`${space}    `}</strong>;
-          //     } else if (
-          //       idx === player4Info.currentSpace.index &&
-          //       !player4Info.currentSpace.bowserDetour
-          //     ) {
-          //       return <strong className="player4">{`${space}    `}</strong>;
-          //     } else {
-          //       return <span>{`${space}    `}</span>;
-          //     }
-          //   }
           idx === currentPlayerInfo.currentSpace.index &&
           !currentPlayerInfo.currentSpace.bowserDetour ? (
             <strong>{`${space}    `}</strong>
