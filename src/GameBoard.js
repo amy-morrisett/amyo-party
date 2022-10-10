@@ -214,72 +214,120 @@ function GameBoard() {
           updatedPlayerArr[currentPlayerNum].stars--;
       }
     }
+
     if (spaceType === 'CE') {
       const gameDocSnap = await getDoc(gameDoc);
+      let updatedPiranhaArr = [
+        gameDocSnap.data().p1,
+        gameDocSnap.data().p2,
+        gameDocSnap.data().p3,
+        gameDocSnap.data().p4,
+        gameDocSnap.data().p5,
+      ];
+      let currentPiranhaNum;
       if (
         updatedPlayerArr[currentPlayerNum].currentSpace.index === 2 ||
         updatedPlayerArr[currentPlayerNum].currentSpace.index === 3
       ) {
-        let ownerName = gameDocSnap.data().p1.currentOwner;
-        let ownerNum;
-        for (let i = 0; i < updatedPlayerArr.length; i++) {
-          if (updatedPlayerArr[i] === ownerName) {
-            ownerNum = i;
-          }
+        currentPiranhaNum = 0;
+      } else if (
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 6 ||
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 7
+      ) {
+        currentPiranhaNum = 1;
+      } else if (
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 11 ||
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 12
+      ) {
+        currentPiranhaNum = 2;
+      } else if (
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 15 ||
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 16
+      ) {
+        currentPiranhaNum = 3;
+      } else if (
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 37 ||
+        updatedPlayerArr[currentPlayerNum].currentSpace.index === 38
+      ) {
+        currentPiranhaNum = 4;
+      }
+      let ownerName = updatedPiranhaArr[currentPiranhaNum].currentOwner;
+      let ownerNum;
+      for (let i = 0; i < updatedPlayerArr.length; i++) {
+        if (updatedPlayerArr[i] === ownerName) {
+          ownerNum = i;
         }
-        if (ownerName) {
-          if (gameDocSnap.data().p1.type === 'coin') {
-            if (ownerNum === currentPlayerNum) {
-              updatedPlayerArr[currentPlayerNum].coins += 5;
-              if (updatedPlayerArr[currentPlayerNum].coins >= 30) {
-                updatedPlayerArr[currentPlayerNum].coins -= 30;
-                //TODO: change type of piranha 1 to star, make sure this doesn't interfere with stuff below
-              }
+      }
+      if (ownerName) {
+        if (updatedPiranhaArr[currentPiranhaNum].type === 'coin') {
+          if (ownerNum === currentPlayerNum) {
+            updatedPlayerArr[currentPlayerNum].coins += 5;
+            if (updatedPlayerArr[currentPlayerNum].coins >= 30) {
+              updatedPlayerArr[currentPlayerNum].coins -= 30;
+              updatedPiranhaArr[currentPiranhaNum].type = 'star';
+              updatedPiranhaArr[currentPiranhaNum].canSteal = 1;
             } else {
-              const coinsToExchange =
-                updatedPlayerArr[currentPlayerNum].coins >= 10
-                  ? 10
-                  : updatedPlayerArr[currentPlayerNum].coins;
-              updatedPlayerArr[currentPlayerNum].coins -= coinsToExchange;
-              updatedPlayerArr[ownerNum].coins += coinsToExchange;
-            }
-            if (gameDocSnap.data().p1.canSteal === 1) {
-              updateDoc(gameDoc, {
-                p1: {
-                  currentOwner: '',
-                  type: 'coin',
-                  canSteal: 0,
-                },
-              });
-            } else {
-              updateDoc(gameDoc, {
-                p1: {
-                  currentOwner: gameDocSnap.data().p1.currentOwner,
-                  type: 'coin',
-                  canSteal: 1,
-                },
-              });
+              updatedPiranhaArr[currentPiranhaNum].canSteal--;
             }
           } else {
-            if (ownerNum === currentPlayerNum) {
-              updatedPlayerArr[currentPlayerNum].coins += 10;
-            } else {
-              const starsToExchange = updatedPlayerArr[currentPlayerNum].stars
-                ? 1
-                : 0;
-              updatedPlayerArr[currentPlayerNum].stars -= starsToExchange;
-              updatedPlayerArr[ownerNum].stars += starsToExchange;
-            }
+            const coinsToExchange =
+              updatedPlayerArr[currentPlayerNum].coins >= 10
+                ? 10
+                : updatedPlayerArr[currentPlayerNum].coins;
+            updatedPlayerArr[currentPlayerNum].coins -= coinsToExchange;
+            updatedPlayerArr[ownerNum].coins += coinsToExchange;
+            updatedPiranhaArr[currentPiranhaNum].canSteal--;
           }
-        } else {
-          updateDoc(gameDoc, {
-            p1: {
-              currentOwner: updatedPlayerArr[currentPlayerNum].charName,
+
+          if (!updatedPiranhaArr[currentPiranhaNum].canSteal) {
+            updatedPiranhaArr[currentPiranhaNum] = {
+              currentOwner: '',
               type: 'coin',
               canSteal: 2,
-            },
-          });
+            };
+          }
+        } else {
+          if (ownerNum === currentPlayerNum) {
+            updatedPlayerArr[currentPlayerNum].coins += 10;
+          } else {
+            const starsToExchange = updatedPlayerArr[currentPlayerNum].stars
+              ? 1
+              : 0;
+            updatedPlayerArr[currentPlayerNum].stars -= starsToExchange;
+            updatedPlayerArr[ownerNum].stars += starsToExchange;
+          }
+          updatedPiranhaArr[currentPiranhaNum].canSteal--;
+          if (!updatedPiranhaArr[currentPiranhaNum].canSteal)
+            updatedPiranhaArr[currentPiranhaNum] = {
+              currentOwner: '',
+              type: 'coin',
+              canSteal: 2,
+            };
         }
+      } else {
+        updatedPiranhaArr[currentPiranhaNum].currentOwner =
+          updatedPlayerArr[currentPlayerNum].charName;
+      }
+      if (currentPiranhaNum === 0) {
+        updateDoc(gameDoc, {
+          p1: updatedPiranhaArr[0],
+        });
+      } else if (currentPiranhaNum === 1) {
+        updateDoc(gameDoc, {
+          p2: updatedPiranhaArr[1],
+        });
+      } else if (currentPiranhaNum === 2) {
+        updateDoc(gameDoc, {
+          p3: updatedPiranhaArr[2],
+        });
+      } else if (currentPiranhaNum === 3) {
+        updateDoc(gameDoc, {
+          p4: updatedPiranhaArr[3],
+        });
+      } else if (currentPiranhaNum === 4) {
+        updateDoc(gameDoc, {
+          p5: updatedPiranhaArr[4],
+        });
       }
     }
     if (spaceType === 'C') {
