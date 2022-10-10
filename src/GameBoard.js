@@ -17,7 +17,7 @@ import PlayerStats from './PlayerStats.js';
 import './App.css';
 
 function GameBoard() {
-  //L is lucky, B is blue, CE is coin piranha event, SE is star piranha event, KE is skip event, R is red, W is Bowser, C is chance, V is VS
+  //L is lucky, B is blue, CE is coin piranha event, KE is skip event, R is red, W is Bowser, C is chance, V is VS
 
   const [diceRoll, setDiceRoll] = useState(0);
   const [spaces, setSpaces] = useState([]);
@@ -63,12 +63,6 @@ function GameBoard() {
         //TODO: not sure if this is updating the PlayerStats display correctly
       }
     }
-    if (spaceArr[player.currentSpace.index] === 'C') {
-      //choose random 1st player
-      //choose random 2nd player
-      //choose random event out of the following:
-      //1 swaps coins with 2, 1 swaps stars with 2, and reverse
-    }
     if (spaceArr[player.currentSpace.index] === 'V') {
       //current player gets 3 coins
       //randomly choose number of coins everyone has to give up out of 5, 10, 15, 20
@@ -97,7 +91,7 @@ function GameBoard() {
         updatedPlayer.stars++;
       }
 
-      if (updatedIndex >= 30) {
+      if (currentPlayerInfo.currentSpace.index < 32 && updatedIndex >= 30) {
         setSeeItemShop(true);
       }
 
@@ -145,7 +139,11 @@ function GameBoard() {
       }
     }
 
+    console.log('updatedIndex', updatedIndex);
+    console.log('currentPlayerInfo before setting', currentPlayerInfo);
+    console.log(updatedPlayer);
     setCurrentPlayerInfo(updatedPlayer);
+    console.log('currentPlayerInfo after setting', currentPlayerInfo);
 
     let currentBoard = updatedPlayer.currentSpace.bowserDetour
       ? bowserDetour
@@ -181,10 +179,46 @@ function GameBoard() {
     }
 
     let updatedPlayerArr = [
-      { ...player1Info },
-      { ...player2Info },
-      { ...player3Info },
-      { ...player4Info },
+      {
+        charName: player1Info.charName,
+        coins: player1Info.coins,
+        items: player1Info.items,
+        stars: player1Info.stars,
+        currentSpace: {
+          bowserDetour: player1Info.currentSpace.bowserDetour,
+          index: player1Info.currentSpace.index,
+        },
+      },
+      {
+        charName: player2Info.charName,
+        coins: player2Info.coins,
+        items: player2Info.items,
+        stars: player2Info.stars,
+        currentSpace: {
+          bowserDetour: player2Info.currentSpace.bowserDetour,
+          index: player2Info.currentSpace.index,
+        },
+      },
+      {
+        charName: player3Info.charName,
+        coins: player3Info.coins,
+        items: player3Info.items,
+        stars: player3Info.stars,
+        currentSpace: {
+          bowserDetour: player3Info.currentSpace.bowserDetour,
+          index: player3Info.currentSpace.index,
+        },
+      },
+      {
+        charName: player4Info.charName,
+        coins: player4Info.coins,
+        items: player4Info.items,
+        stars: player4Info.stars,
+        currentSpace: {
+          bowserDetour: player4Info.currentSpace.bowserDetour,
+          index: player4Info.currentSpace.index,
+        },
+      },
     ];
 
     let currentPlayerNum;
@@ -194,6 +228,8 @@ function GameBoard() {
         currentPlayerNum = i;
       }
     }
+
+    updatedPlayerArr[currentPlayerNum] = updatedPlayer;
 
     if (spaceType === 'W') {
       let randomChoice = Math.floor(Math.random() * 3);
@@ -251,13 +287,27 @@ function GameBoard() {
       ) {
         currentPiranhaNum = 4;
       }
-      let ownerName = updatedPiranhaArr[currentPiranhaNum].currentOwner;
+      //   console.log(
+      //     'updatedPlayerArr[currentPlayerNum].currentSpace.index',
+      //     updatedPlayerArr[currentPlayerNum].currentSpace.index
+      //   );
+      //   console.log('currentPiranhaNum', currentPiranhaNum);
+      //   console.log('updatedPiranhaArr', updatedPiranhaArr);
+      //   console.log(
+      //     'updatedPiranhaArr[currentPiranhaNum]',
+      //     updatedPiranhaArr[currentPiranhaNum]
+      //   );
+      let ownerName = updatedPiranhaArr[currentPiranhaNum].currentOwner
+        ? updatedPiranhaArr[currentPiranhaNum].currentOwner
+        : '';
+      //   console.log('ownerName', ownerName);
       let ownerNum;
       for (let i = 0; i < updatedPlayerArr.length; i++) {
-        if (updatedPlayerArr[i] === ownerName) {
+        if (updatedPlayerArr[i].charName === ownerName) {
           ownerNum = i;
         }
       }
+      //   console.log('ownerNum', ownerNum);
       if (ownerName) {
         if (updatedPiranhaArr[currentPiranhaNum].type === 'coin') {
           if (ownerNum === currentPlayerNum) {
@@ -305,8 +355,11 @@ function GameBoard() {
             };
         }
       } else {
-        updatedPiranhaArr[currentPiranhaNum].currentOwner =
-          updatedPlayerArr[currentPlayerNum].charName;
+        if (updatedPlayerArr[currentPlayerNum].coins >= 5) {
+          updatedPlayerArr[currentPlayerNum].coins -= 5;
+          updatedPiranhaArr[currentPiranhaNum].currentOwner =
+            updatedPlayerArr[currentPlayerNum].charName;
+        }
       }
       if (currentPiranhaNum === 0) {
         updateDoc(gameDoc, {
@@ -331,9 +384,41 @@ function GameBoard() {
       }
     }
     if (spaceType === 'C') {
+      let randomPlayer = updatedPlayerArr[Math.floor(Math.random() * 4)];
+      let randomPlayer2 = updatedPlayerArr[Math.floor(Math.random() * 4)];
+      while (randomPlayer === randomPlayer2) {
+        randomPlayer2 = updatedPlayerArr[Math.floor(Math.random() * 4)];
+      }
+
+      const randomChoice = Math.floor(Math.random() * 2);
+      if (randomChoice) {
+        let placeholder = updatedPlayerArr[randomPlayer].coins;
+        updatedPlayerArr[randomPlayer].coins =
+          updatedPlayerArr[randomPlayer2].coins;
+        updatedPlayerArr[randomPlayer2].coins = placeholder;
+      } else {
+        let placeholder = updatedPlayerArr[randomPlayer].stars;
+        updatedPlayerArr[randomPlayer].stars =
+          updatedPlayerArr[randomPlayer2].stars;
+        updatedPlayerArr[randomPlayer2].stars = placeholder;
+      }
     }
+
     if (spaceType === 'V') {
     }
+
+    setCurrentPlayerInfo(updatedPlayerArr[currentPlayerNum]);
+    setPlayer1Info(updatedPlayerArr[0]);
+    setPlayer2Info(updatedPlayerArr[1]);
+    setPlayer3Info(updatedPlayerArr[2]);
+    setPlayer4Info(updatedPlayerArr[3]);
+
+    updateDoc(gameDoc, {
+      char1: updatedPlayerArr[0],
+      char2: updatedPlayerArr[1],
+      char3: updatedPlayerArr[2],
+      char4: updatedPlayerArr[3],
+    });
   }
 
   async function handleTurnChange() {
@@ -397,6 +482,7 @@ function GameBoard() {
       }
     }
     setSeeItemShop(false);
+    //seems like we're seeing the item shop more than we should?
   }
 
   useEffect(() => {
