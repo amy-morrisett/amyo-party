@@ -91,7 +91,7 @@ function GameBoard() {
         updatedPlayer.stars++;
       }
 
-      if (currentPlayerInfo.currentSpace.index < 32 && updatedIndex >= 30) {
+      if (currentPlayerInfo.currentSpace.index < 30 && updatedIndex >= 30) {
         setSeeItemShop(true);
       }
 
@@ -485,6 +485,10 @@ function GameBoard() {
     //seems like we're seeing the item shop more than we should?
   }
 
+  async function cancelItemShop() {
+    setSeeItemShop(false);
+  }
+
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
     const getSpaceInfo = async () => {
@@ -569,6 +573,9 @@ function GameBoard() {
                 </li>
               ))}
             </ul>
+            <button type="button" onClick={cancelItemShop}>
+              Cancel
+            </button>
           </div>
         ) : (
           ''
