@@ -30,6 +30,21 @@ function GameBoard() {
   const [player4Info, setPlayer4Info] = useState({});
   const [wonTheLottery, setWonTheLottery] = useState(true);
   const [seeItemShop, setSeeItemShop] = useState(false);
+  const [seeUseItem, setSeeUseItem] = useState(false);
+
+  function handleUseItem(item) {
+    if (item === 'warp block') {
+    }
+    if (item === 'double dice') {
+    }
+    if (item === 'mushroom') {
+    }
+    if (item === 'golden pipe') {
+    }
+    if (item === 'custom dice') {
+    }
+    setSeeUseItem(false);
+  }
 
   function handleDiceRoll() {
     setDiceRoll(Math.floor(Math.random() * 10) + 1);
@@ -422,16 +437,20 @@ function GameBoard() {
 
     if (currentPlayerInfo.charName === gameDocSnap.data().char4.charName) {
       setCurrentPlayerInfo(gameDocSnap.data().char1);
+      if (gameDocSnap.data().char1.items.length > 0) setSeeUseItem(true);
     } else if (
       currentPlayerInfo.charName === gameDocSnap.data().char3.charName
     ) {
       setCurrentPlayerInfo(gameDocSnap.data().char4);
+      if (gameDocSnap.data().char4.items.length > 0) setSeeUseItem(true);
     } else if (
       currentPlayerInfo.charName === gameDocSnap.data().char2.charName
     ) {
       setCurrentPlayerInfo(gameDocSnap.data().char3);
+      if (gameDocSnap.data().char3.items.length > 0) setSeeUseItem(true);
     } else {
       setCurrentPlayerInfo(gameDocSnap.data().char2);
+      if (gameDocSnap.data().char2.items.length > 0) setSeeUseItem(true);
     }
   }
 
@@ -537,6 +556,26 @@ function GameBoard() {
           ) : (
             <span>{`${space}    `}</span>
           )
+        )}
+      </div>
+      <div></div>
+      <div>
+        {seeUseItem ? (
+          <div>
+            'Would you like to use an item?'{' '}
+            <ul>
+              {currentPlayerInfo.items.map((item) => (
+                <button type="button" onClick={() => handleUseItem(item)}>
+                  {item}
+                </button>
+              ))}
+            </ul>
+            <button type="button" onClick={cancelItemShop}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          ''
         )}
       </div>
 

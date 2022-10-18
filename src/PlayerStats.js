@@ -20,7 +20,7 @@ function PlayerStats() {
     };
     getPlayerInfo();
   }, [player1Info, player2Info, player3Info, player4Info]);
-  //TODO -- IMPORTANT!!! : the dependency array was not the problem, but my reads are still very high...
+  //TODO -- IMPORTANT!!! : this dependency array is making my reads really high...
 
   // function determineRankings() {
   //   const playerArr = [player1Info, player2Info, player3Info, player4Info]
