@@ -31,23 +31,105 @@ function GameBoard() {
   const [wonTheLottery, setWonTheLottery] = useState(true);
   const [seeItemShop, setSeeItemShop] = useState(false);
   const [seeUseItem, setSeeUseItem] = useState(false);
+  const [usingDoubleDice, setUsingDoubleDice] = useState(false);
+  const [usingShroom, setUsingShroom] = useState(false);
+  const [usingCustomDice, setUsingCustomDice] = useState(false);
+  const [customDiceRoll, setCustomDiceRoll] = useState(0);
+
+  function handleSubmit(evt) {
+    evt.preventDefault();
+  }
+
+  function handleChange(evt) {
+    setCustomDiceRoll(evt.target.value);
+  }
 
   function handleUseItem(item) {
+    let updatedItems = currentPlayerInfo.items.filter(
+      (itemName) => itemName !== item
+    );
+
+    let updatedPlayer = {
+      charName: currentPlayerInfo.charName,
+      coins: currentPlayerInfo.coins,
+      items: updatedItems,
+      stars: currentPlayerInfo.stars,
+      currentSpace: {
+        bowserDetour: currentPlayerInfo.currentSpace.bowserDetour,
+        index: currentPlayerInfo.currentSpace.index,
+      },
+    };
+
     if (item === 'warp block') {
+      let randomBoard = Math.floor(Math.random() * 4);
+      if (randomBoard) {
+        updatedPlayer.currentSpace.bowserDetour = false;
+        updatedPlayer.currentSpace.index = Math.floor(Math.random() * 42);
+      } else {
+        updatedPlayer.currentSpace.bowserDetour = true;
+        updatedPlayer.currentSpace.index = Math.floor(Math.random() * 11);
+      }
     }
+
     if (item === 'double dice') {
+      setUsingDoubleDice(true);
     }
     if (item === 'mushroom') {
+      setUsingShroom(true);
     }
     if (item === 'golden pipe') {
+      updatedPlayer.currentSpace.bowserDetour = false;
+      updatedPlayer.currentSpace.index = 21;
     }
     if (item === 'custom dice') {
+      setUsingCustomDice(true);
+    }
+
+    setCurrentPlayerInfo(updatedPlayer);
+
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+
+    if (currentPlayerInfo.charName === player4Info.charName) {
+      setPlayer4Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char4: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player3Info.charName) {
+      setPlayer3Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char3: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player2Info.charName) {
+      setPlayer2Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char2: updatedPlayer,
+      });
+    } else {
+      setPlayer1Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char1: updatedPlayer,
+      });
     }
     setSeeUseItem(false);
   }
 
   function handleDiceRoll() {
-    setDiceRoll(Math.floor(Math.random() * 10) + 1);
+    if (usingShroom) {
+      setDiceRoll(Math.floor(Math.random() * 10) + 6);
+      setUsingShroom(false);
+    } else if (usingDoubleDice) {
+      setDiceRoll(
+        Math.floor(Math.random() * 10) +
+          1 +
+          (Math.floor(Math.random() * 10) + 1)
+      );
+      setUsingDoubleDice(false);
+    } else if (usingCustomDice) {
+      setDiceRoll(customDiceRoll);
+      setUsingCustomDice(false);
+    } else {
+      setDiceRoll(Math.floor(Math.random() * 10) + 1);
+    }
   }
 
   async function handleBoardEvent(player, spaceArr) {
@@ -99,7 +181,11 @@ function GameBoard() {
     };
 
     if (!currentPlayerInfo.currentSpace.bowserDetour) {
-      if (updatedIndex >= 22 && updatedPlayer.coins >= 20) {
+      if (
+        currentPlayerInfo.currentSpace.index < 22 &&
+        updatedIndex >= 22 &&
+        updatedPlayer.coins >= 20
+      ) {
         updatedPlayer.coins -= 20;
         updatedPlayer.stars++;
       }
@@ -558,7 +644,6 @@ function GameBoard() {
           )
         )}
       </div>
-      <div></div>
       <div>
         {seeUseItem ? (
           <div>
@@ -574,6 +659,25 @@ function GameBoard() {
               Cancel
             </button>
           </div>
+        ) : (
+          ''
+        )}
+      </div>
+      <div>
+        {' '}
+        {usingCustomDice ? (
+          <form onSubmit={handleSubmit}>
+            <label for="quantity">Dice Roll (between 1 and 10):</label>
+            <input
+              value={customDiceRoll}
+              onChange={handleChange}
+              type="number"
+              id="quantity"
+              name="quantity"
+              min="1"
+              max="10"
+            ></input>
+          </form>
         ) : (
           ''
         )}
