@@ -17,7 +17,7 @@ function CharacterSelect() {
       }
       playerArr.push(charArr[randomIdx]);
     }
-
+    let emptyPiranha = { canSteal: 2, currentOwner: '', type: 'coin' };
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     updateDoc(gameDoc, {
       char1: {
@@ -48,6 +48,11 @@ function CharacterSelect() {
         stars: 0,
         currentSpace: { bowserDetour: false, index: 0 },
       },
+      p1: emptyPiranha,
+      p2: emptyPiranha,
+      p3: emptyPiranha,
+      p4: emptyPiranha,
+      p5: emptyPiranha,
     });
     playerArr = playerArr.slice(1);
     setCPUArr(playerArr);

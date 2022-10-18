@@ -2,7 +2,7 @@
 //4 players -- for each one:
 //character, current coins, current stars, current items, current space, perhaps other stats for bonus stars?
 //TODO: how to represent different players' spaces on the board (probs with colors, or maybe putting their name after the space on the board)
-//TODO: account for board events
+//TODO: figure out VS event (difficult rn given turn-taking mechanics)
 //TODO: allow players to use items and factor those into the turn
 //TODO: status of each piranha plant event (who owns it if anyone, is it stealing coins or stars)
 //TODO: display who is in 1st, 2nd, 3rd, 4th place?
@@ -36,8 +36,6 @@ function GameBoard() {
   }
 
   async function handleBoardEvent(player, spaceArr) {
-    // const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
-    // const gameDocSnap = await getDoc(gameDoc);
     if (spaceArr[player.currentSpace.index] === 'B') {
       player.coins += 3;
     }
@@ -139,11 +137,7 @@ function GameBoard() {
       }
     }
 
-    console.log('updatedIndex', updatedIndex);
-    console.log('currentPlayerInfo before setting', currentPlayerInfo);
-    console.log(updatedPlayer);
     setCurrentPlayerInfo(updatedPlayer);
-    console.log('currentPlayerInfo after setting', currentPlayerInfo);
 
     let currentBoard = updatedPlayer.currentSpace.bowserDetour
       ? bowserDetour
@@ -153,6 +147,7 @@ function GameBoard() {
     if (simpleEvents.includes(spaceType)) {
       handleBoardEvent(updatedPlayer, currentBoard);
     }
+    //TODO: make this an if-else depending on what space you land on, so we're only updating stuff in the database once
 
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
 
@@ -482,7 +477,6 @@ function GameBoard() {
       }
     }
     setSeeItemShop(false);
-    //seems like we're seeing the item shop more than we should?
   }
 
   async function cancelItemShop() {

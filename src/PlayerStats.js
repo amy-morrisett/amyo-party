@@ -20,7 +20,18 @@ function PlayerStats() {
     };
     getPlayerInfo();
   }, [player1Info, player2Info, player3Info, player4Info]);
-  //TODO -- IMPORTANT!!! : this dependency array may be exploding my reads, need to fix
+  //TODO -- IMPORTANT!!! : the dependency array was not the problem, but my reads are still very high...
+
+  // function determineRankings() {
+  //   const playerArr = [player1Info, player2Info, player3Info, player4Info]
+  //   let first = player1Info
+  //   let second
+  //   let third
+  //   let fourth
+  //   for (let i = 0; i < playerArr.length; i++) {
+
+  //   }
+  // }
 
   return (
     <div className="PlayerStats">
