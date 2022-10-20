@@ -10,6 +10,9 @@
 //LATER GOAL: put in other boards?
 //we are not gonna have triple dice cause it will make my life harder lol
 
+//for testing -- replace Math.random()s with a variable, and then test each possible option?
+//also test results of landing on each space? (especially looping around the board)
+
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
@@ -44,7 +47,7 @@ function GameBoard() {
     setCustomDiceRoll(evt.target.value);
   }
 
-  function handleUseItem(item) {
+  function handleUseItem(item, testingNum) {
     let updatedItems = currentPlayerInfo.items.filter(
       (itemName) => itemName !== item
     );
@@ -61,13 +64,21 @@ function GameBoard() {
     };
 
     if (item === 'warp block') {
-      let randomBoard = Math.floor(Math.random() * 4);
+      let randomBoard = testingNum;
       if (randomBoard) {
         updatedPlayer.currentSpace.bowserDetour = false;
         updatedPlayer.currentSpace.index = Math.floor(Math.random() * 42);
+        console.log(
+          'testing warp block, should be main board',
+          updatedPlayer.currentSpace
+        );
       } else {
         updatedPlayer.currentSpace.bowserDetour = true;
         updatedPlayer.currentSpace.index = Math.floor(Math.random() * 11);
+        console.log(
+          'testing warp block, should be Bowser detour board',
+          updatedPlayer.currentSpace
+        );
       }
     }
 
@@ -650,9 +661,20 @@ function GameBoard() {
             'Would you like to use an item?'{' '}
             <ul>
               {currentPlayerInfo.items.map((item) => (
-                <button type="button" onClick={() => handleUseItem(item)}>
-                  {item}
-                </button>
+                <div>
+                  <button type="button" onClick={() => handleUseItem(item, 0)}>
+                    {item} testingNum 0
+                  </button>
+                  <button type="button" onClick={() => handleUseItem(item, 1)}>
+                    {item} testingNum 1
+                  </button>
+                  <button type="button" onClick={() => handleUseItem(item, 2)}>
+                    {item} testingNum 2
+                  </button>
+                  <button type="button" onClick={() => handleUseItem(item, 3)}>
+                    {item} testingNum 3
+                  </button>
+                </div>
               ))}
             </ul>
             <button type="button" onClick={cancelItemShop}>
