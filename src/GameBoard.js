@@ -48,7 +48,7 @@ function GameBoard() {
     setCustomDiceRoll(evt.target.value);
   }
 
-  function handleUseItem(item, testingNum) {
+  function handleUseItem(item) {
     // let updatedItems = currentPlayerInfo.items.filter(
     //   (itemName) => itemName !== item
     // );
@@ -76,21 +76,13 @@ function GameBoard() {
     };
 
     if (item === 'warp block') {
-      let randomBoard = testingNum;
+      let randomBoard = Math.floor(Math.random() * 4);
       if (randomBoard) {
         updatedPlayer.currentSpace.bowserDetour = false;
         updatedPlayer.currentSpace.index = Math.floor(Math.random() * 42);
-        console.log(
-          'testing warp block, should be main board',
-          updatedPlayer.currentSpace
-        );
       } else {
         updatedPlayer.currentSpace.bowserDetour = true;
         updatedPlayer.currentSpace.index = Math.floor(Math.random() * 11);
-        console.log(
-          'testing warp block, should be Bowser detour board',
-          updatedPlayer.currentSpace
-        );
       }
     }
 
@@ -674,17 +666,8 @@ function GameBoard() {
             <ul>
               {currentPlayerInfo.items.map((item) => (
                 <div>
-                  <button type="button" onClick={() => handleUseItem(item, 0)}>
-                    {item} testingNum 0
-                  </button>
-                  <button type="button" onClick={() => handleUseItem(item, 1)}>
-                    {item} testingNum 1
-                  </button>
-                  <button type="button" onClick={() => handleUseItem(item, 2)}>
-                    {item} testingNum 2
-                  </button>
-                  <button type="button" onClick={() => handleUseItem(item, 3)}>
-                    {item} testingNum 3
+                  <button type="button" onClick={() => handleUseItem(item)}>
+                    {item}
                   </button>
                 </div>
               ))}
