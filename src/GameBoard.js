@@ -600,6 +600,10 @@ function GameBoard() {
     setSeeItemShop(false);
   }
 
+  async function cancelUseItem() {
+    setSeeUseItem(false);
+  }
+
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
     const getSpaceInfo = async () => {
@@ -659,7 +663,7 @@ function GameBoard() {
       <div>
         {seeUseItem ? (
           <div>
-            'Would you like to use an item?'{' '}
+            Would you like to use an item?{' '}
             <ul>
               {currentPlayerInfo.items.map((item) => (
                 <div>
@@ -669,7 +673,7 @@ function GameBoard() {
                 </div>
               ))}
             </ul>
-            <button type="button" onClick={cancelItemShop}>
+            <button type="button" onClick={cancelUseItem}>
               Cancel
             </button>
           </div>
@@ -710,7 +714,7 @@ function GameBoard() {
       <div>
         {seeItemShop ? (
           <div>
-            'Would you like to buy an item?'{' '}
+            Would you like to buy an item?{' '}
             <ul>
               {Object.keys(itemList).map((item) => (
                 <li>
