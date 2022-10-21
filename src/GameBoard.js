@@ -667,9 +667,23 @@ function GameBoard() {
         )}
       </div>
       <div>
+        <div>
+          BUTTONS FOR TESTING
+          <div>
+            {/* TODO: these actually need to be on the move
+          button instead
+            need buttons for lucky space, bowser space, chance time, also probs
+            for piranha events? */}
+            <button type="button" onClick={() => handleUpdate(0)}>
+              testingNum 0
+            </button>
+          </div>
+        </div>
+      </div>
+      <div>
         {seeUseItem ? (
           <div>
-            'Would you like to use an item?'{' '}
+            Would you like to use an item?{' '}
             <ul>
               {currentPlayerInfo.items.map((item) => (
                 <div>
