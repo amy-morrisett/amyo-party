@@ -530,6 +530,7 @@ function GameBoard() {
   }
 
   async function handleTurnChange() {
+    setDiceRoll(0);
     const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
     const gameDocSnap = await getDoc(gameDoc);
 
