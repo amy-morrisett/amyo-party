@@ -48,9 +48,17 @@ function GameBoard() {
   }
 
   function handleUseItem(item, testingNum) {
-    let updatedItems = currentPlayerInfo.items.filter(
-      (itemName) => itemName !== item
-    );
+    let updatedItems = [];
+
+    let counter = 0;
+
+    for (let elem of currentPlayerInfo.items) {
+      if (counter < 1 && elem === item) {
+        counter++;
+      } else {
+        updatedItems.push(elem);
+      }
+    }
 
     let updatedPlayer = {
       charName: currentPlayerInfo.charName,
