@@ -45,13 +45,10 @@ function GameBoard() {
   }
 
   function handleChange(evt) {
-    setCustomDiceRoll(evt.target.value);
+    setCustomDiceRoll(Number(evt.target.value));
   }
 
   function handleUseItem(item) {
-    // let updatedItems = currentPlayerInfo.items.filter(
-    //   (itemName) => itemName !== item
-    // );
     let updatedItems = [];
 
     let counter = 0;
