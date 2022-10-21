@@ -44,7 +44,7 @@ function GameBoard() {
   }
 
   function handleChange(evt) {
-    setCustomDiceRoll(evt.target.value);
+    setCustomDiceRoll(Number(evt.target.value));
   }
 
   function handleUseItem(item, testingNum) {
@@ -178,7 +178,9 @@ function GameBoard() {
   }
 
   async function handleUpdate() {
+    console.log('diceRoll', diceRoll);
     let updatedIndex = currentPlayerInfo.currentSpace.index + diceRoll;
+    console.log('updatedIndex', updatedIndex);
 
     let updatedPlayer = {
       charName: currentPlayerInfo.charName,
@@ -392,6 +394,7 @@ function GameBoard() {
         updatedPlayerArr[currentPlayerNum].currentSpace.index === 37 ||
         updatedPlayerArr[currentPlayerNum].currentSpace.index === 38
       ) {
+        console.log('should be here', currentPlayerInfo.currentSpace.index);
         currentPiranhaNum = 4;
       }
       //   console.log(
