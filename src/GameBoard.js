@@ -151,7 +151,7 @@ function GameBoard() {
     }
   }
 
-  async function handleBoardEvent(player, spaceArr) {
+  async function handleBoardEvent(player, spaceArr, testingNum) {
     if (spaceArr[player.currentSpace.index] === 'B') {
       player.coins += 3;
     }
@@ -164,17 +164,22 @@ function GameBoard() {
     }
 
     if (spaceArr[player.currentSpace.index] === 'L') {
-      let randomChoice = Math.floor(Math.random() * 3);
+      // let randomChoice = Math.floor(Math.random() * 3);
+      let randomChoice = testingNum;
       if (randomChoice === 0) {
         player.coins += 10;
+        console.log('player after gaining 10 coins', player);
       }
       if (randomChoice === 1) {
         player.coins += 15;
+        console.log('player after gaining 15 coins', player);
       }
       if (randomChoice === 2) {
         const itemArr = Object.keys(itemList);
         player.items.push(itemArr[Math.floor(Math.random() * itemArr.length)]);
         //TODO: not sure if this is updating the PlayerStats display correctly
+        console.log('player after gaining a random item', player);
+        //TODO: test to make sure every item option works here, probably need to make a new testingNum-esque variable
       }
     }
     if (spaceArr[player.currentSpace.index] === 'V') {
@@ -267,7 +272,7 @@ function GameBoard() {
     let spaceType = currentBoard[updatedPlayer.currentSpace.index];
     let simpleEvents = ['B', 'R', 'KE', 'L'];
     if (simpleEvents.includes(spaceType)) {
-      handleBoardEvent(updatedPlayer, currentBoard);
+      handleBoardEvent(updatedPlayer, currentBoard, testingNum);
     }
     //TODO: make this an if-else depending on what space you land on, so we're only updating stuff in the database once
 
