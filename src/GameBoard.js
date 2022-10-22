@@ -185,8 +185,8 @@ function GameBoard() {
     }
   }
 
-  async function handleUpdate() {
-    console.log('diceRoll', diceRoll);
+  async function handleUpdate(testingNum) {
+    //console.log('diceRoll', diceRoll);
     let updatedIndex = currentPlayerInfo.currentSpace.index + diceRoll;
     console.log('updatedIndex', updatedIndex);
 
@@ -349,11 +349,13 @@ function GameBoard() {
     updatedPlayerArr[currentPlayerNum] = updatedPlayer;
 
     if (spaceType === 'W') {
-      let randomChoice = Math.floor(Math.random() * 3);
+      //let randomChoice = Math.floor(Math.random() * 3);
+      let randomChoice = testingNum;
       if (randomChoice === 0) {
         updatedPlayerArr[currentPlayerNum].coins >= 10
           ? (updatedPlayerArr[currentPlayerNum].coins -= 10)
           : (updatedPlayerArr[currentPlayerNum].coins = 0);
+        console.log('updatedPlayer after losing 10 coins', updatedPlayer);
       }
       if (randomChoice === 1) {
         let totalCoins = updatedPlayerArr.reduce((x, y) => x + y.coins, 0);
@@ -361,10 +363,16 @@ function GameBoard() {
         for (let elem of updatedPlayerArr) {
           elem.coins = newCoins;
         }
+        console.log(
+          'updatedPlayerArr after coins are evenly redistributed',
+          updatedPlayerArr
+        );
       }
       if (randomChoice === 2) {
-        if (updatedPlayerArr[currentPlayerNum].stars)
+        if (updatedPlayerArr[currentPlayerNum].stars) {
           updatedPlayerArr[currentPlayerNum].stars--;
+        }
+        console.log('updatedPlayer after losing a star', updatedPlayer);
       }
     }
 
@@ -667,20 +675,6 @@ function GameBoard() {
         )}
       </div>
       <div>
-        <div>
-          BUTTONS FOR TESTING
-          <div>
-            {/* TODO: these actually need to be on the move
-          button instead
-            need buttons for lucky space, bowser space, chance time, also probs
-            for piranha events? */}
-            <button type="button" onClick={() => handleUpdate(0)}>
-              testingNum 0
-            </button>
-          </div>
-        </div>
-      </div>
-      <div>
         {seeUseItem ? (
           <div>
             Would you like to use an item?{' '}
@@ -735,9 +729,33 @@ function GameBoard() {
       </button>
       <p>{diceRoll ? `You rolled a(n) ${diceRoll}!` : 'Roll the dice!'}</p>
 
-      <button type="button" onClick={handleUpdate}>
+      {/* <button type="button" onClick={handleUpdate}>
         Move
-      </button>
+      </button> */}
+
+      <div>
+        <div>
+          BUTTONS FOR TESTING
+          <div>
+            {/* TODO: these actually need to be on the move
+          button instead
+            need buttons for lucky space, bowser space, chance time, also probs
+            for piranha events? */}
+            <button type="button" onClick={() => handleUpdate(0)}>
+              Move - testingNum 0
+            </button>
+            <button type="button" onClick={() => handleUpdate(1)}>
+              Move - testingNum 1
+            </button>
+            <button type="button" onClick={() => handleUpdate(2)}>
+              Move - testingNum 2
+            </button>
+            <button type="button" onClick={() => handleUpdate(3)}>
+              Move - testingNum 3
+            </button>
+          </div>
+        </div>
+      </div>
       <p>{wonTheLottery ? '' : 'Oh no, you lost the Bowser lottery!'}</p>
 
       <div>
