@@ -354,8 +354,9 @@ function GameBoard() {
         }
       }
       if (randomChoice === 2) {
-        if (updatedPlayerArr[currentPlayerNum].stars)
+        if (updatedPlayerArr[currentPlayerNum].stars) {
           updatedPlayerArr[currentPlayerNum].stars--;
+        }
       }
     }
 
