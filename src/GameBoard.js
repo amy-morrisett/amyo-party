@@ -34,6 +34,7 @@ function GameBoard() {
   const [player4Info, setPlayer4Info] = useState({});
   const [wonTheLottery, setWonTheLottery] = useState(true);
   const [seeItemShop, setSeeItemShop] = useState(false);
+  const [seeStarPurchase, setSeeStarPurchase] = useState(false);
   const [seeUseItem, setSeeUseItem] = useState(false);
   const [usingDoubleDice, setUsingDoubleDice] = useState(false);
   const [usingShroom, setUsingShroom] = useState(false);
@@ -46,6 +47,49 @@ function GameBoard() {
 
   function handleChange(evt) {
     setCustomDiceRoll(Number(evt.target.value));
+  }
+
+  function handleStarPurchase() {
+    let updatedPlayer = {
+      charName: currentPlayerInfo.charName,
+      coins: currentPlayerInfo.coins,
+      items: currentPlayerInfo.items,
+      stars: currentPlayerInfo.stars,
+      currentSpace: {
+        bowserDetour: currentPlayerInfo.currentSpace.bowserDetour,
+        index: currentPlayerInfo.currentSpace.index,
+      },
+    };
+
+    updatedPlayer.coins -= 20;
+    updatedPlayer.stars++;
+
+    setCurrentPlayerInfo(updatedPlayer);
+
+    const gameDoc = doc(db, 'games', 'pmX2c0bJU9JNpY5wb4ZR');
+
+    if (currentPlayerInfo.charName === player4Info.charName) {
+      setPlayer4Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char4: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player3Info.charName) {
+      setPlayer3Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char3: updatedPlayer,
+      });
+    } else if (currentPlayerInfo.charName === player2Info.charName) {
+      setPlayer2Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char2: updatedPlayer,
+      });
+    } else {
+      setPlayer1Info(updatedPlayer);
+      updateDoc(gameDoc, {
+        char1: updatedPlayer,
+      });
+    }
+    setSeeStarPurchase(false);
   }
 
   function handleUseItem(item) {
@@ -198,8 +242,7 @@ function GameBoard() {
         updatedIndex >= 22 &&
         updatedPlayer.coins >= 20
       ) {
-        updatedPlayer.coins -= 20;
-        updatedPlayer.stars++;
+        setSeeStarPurchase(true);
       }
 
       if (currentPlayerInfo.currentSpace.index < 30 && updatedIndex >= 30) {
@@ -606,6 +649,10 @@ function GameBoard() {
     setSeeUseItem(false);
   }
 
+  async function cancelStarPurchase() {
+    setSeeStarPurchase(false);
+  }
+
   useEffect(() => {
     const boardDoc = doc(db, 'party-info', 'boardLayouts');
     const getSpaceInfo = async () => {
@@ -732,6 +779,22 @@ function GameBoard() {
             </ul>
             <button type="button" onClick={cancelItemShop}>
               Cancel
+            </button>
+          </div>
+        ) : (
+          ''
+        )}
+      </div>
+
+      <div>
+        {seeStarPurchase && currentPlayerInfo.coins >= 20 ? (
+          <div>
+            Would you like to purchase a star?{' '}
+            <button type="button" onClick={handleStarPurchase}>
+              Yes
+            </button>
+            <button type="button" onClick={cancelStarPurchase}>
+              No
             </button>
           </div>
         ) : (
