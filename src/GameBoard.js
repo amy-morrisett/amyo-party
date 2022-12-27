@@ -49,6 +49,18 @@ function GameBoard() {
     setCustomDiceRoll(Number(evt.target.value));
   }
 
+  function handleComputerTurn(computerPlayer) {
+    //can still use other functions inside of here, like handleUseItem
+    if (computerPlayer.items) {
+      if (computerPlayer.items.includes('golden pipe')) {
+        if (computerPlayer.currentSpace.index < 19) {
+          handleUseItem('golden pipe');
+        }
+      }
+    }
+    handleDiceRoll();
+  }
+
   function handleStarPurchase() {
     let updatedPlayer = {
       charName: currentPlayerInfo.charName,
